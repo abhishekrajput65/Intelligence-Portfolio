@@ -8,7 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js';document.head.appendChild(s);"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';document.head.appendChild(s);"></script>
 <style>
   :root{
     --ink:#0B0F19;
@@ -121,6 +122,18 @@
   .mm-player.challenger{ background:#fbf1d9; border-color:var(--gold); color:#8a6d1a; }
   .mm-player.niche{ background:#f0eee5; color:#6b6852; }
 
+  .mam-table{ width:100%; border-collapse:collapse; font-size:13.5px; background:var(--white); margin-top:22px;}
+  .mam-table th{ text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.03em; color:#6b6852; padding:11px 14px; border-bottom:2px solid #ddd9c5;}
+  .mam-table td{ padding:11px 14px; border-bottom:1px solid #ece9dc; }
+
+  .fpa-month{ background:var(--white); border:1px solid #ddd9c5; padding:16px 20px; margin-top:12px; }
+  .fpa-month .m{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#6b6852; text-transform:uppercase; letter-spacing:0.03em; margin-bottom:6px; }
+  .fpa-forecast-table{ width:100%; border-collapse:collapse; font-size:13.5px; background:var(--white); margin-top:14px; }
+  .fpa-forecast-table th{ text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; color:#6b6852; padding:9px 12px; border-bottom:2px solid #ddd9c5;}
+  .fpa-forecast-table td{ padding:9px 12px; border-bottom:1px solid #ece9dc; }
+  .fpa-risks{ margin-top:14px; padding-left:20px; }
+  .fpa-risks li{ font-size:13.5px; margin-bottom:6px; }
+
   footer{ padding:34px 5vw 50px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px; align-items:center;}
   footer .mono{ color:var(--ink-muted); font-size:12.5px; }
   footer a.cta{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--gold); text-decoration:none; border-bottom:1px solid var(--gold); padding-bottom:2px;}
@@ -146,13 +159,15 @@
     <button data-tool="profile">Company Profile <span class="live-dot"></span></button>
     <button data-tool="comps">Comps <span class="live-dot"></span></button>
     <button data-tool="mm">Market Map <span class="live-dot"></span></button>
+    <button data-tool="fpa">FP&amp;A Analysis <span class="live-dot"></span></button>
+    <button data-tool="mam">M&amp;A Monitor <span class="live-dot"></span></button>
   </nav>
 </header>
 
 <section class="hero">
   <div class="eyebrow">DEAL INTELLIGENCE TERMINAL</div>
-  <h1>A working demonstration of AI-augmented deal research.</h1>
-  <p>Pick a tool below and run it live — each one calls Claude with real-time web search and returns structured output, the way I use AI-assisted research in my day-to-day work.</p>
+  <h1>A working demonstration of AI-augmented financial, deal, and business research.</h1>
+  <p>Each tool below runs live, combining real-time web research with structured analysis to produce decision-ready output — reflecting how AI is increasingly built into modern financial and deal workflows.</p>
 </section>
 
 <!-- TOOL: ORIGINATION -->
@@ -160,8 +175,7 @@
   <div class="tool-head">
     <span class="code">ORIGINATION.EXE — LIVE</span>
     <h2>Deal Origination Scanner</h2>
-    <p>Runs live: Claude researches current, real public signals in the sector you pick — leadership changes, PE holding periods, funding rounds, distress indicators — and flags proactive M&amp;A, IPO, restructuring, debt-raise, and JV opportunities before anything is announced.</p>
-    <span class="proof">Proves: led a proactive deal-origination opportunity tool that translated market signals into early-stage M&amp;A leads</span>
+    <p>Tracks current, real public signals in the sector you pick — leadership changes, PE holding periods, funding rounds, distress indicators — and flags proactive M&amp;A, IPO, restructuring, debt-raise, and JV opportunities before anything is announced.</p>
   </div>
   <div class="panel live-wrap">
     <div class="setup-notice" id="origSetupNotice">⚠ Backend not connected yet. Set <code>API_BASE</code> at the top of this file's script to your deployed Cloudflare Worker URL.</div>
@@ -185,8 +199,7 @@
   <div class="tool-head">
     <span class="code">PROFILE.EXE — LIVE</span>
     <h2>Company Profile Pack</h2>
-    <p>Type any real company. Claude researches current public information and structures it into an IB-style profile — overview, management, recent news, income statement and balance sheet highlights.</p>
-    <span class="proof">Proves: research automation for target screening and opportunity identification</span>
+    <p>Takes any real company and structures current public information into an IB-style profile — overview, management, recent news, income statement and balance sheet highlights.</p>
   </div>
   <div class="panel live-wrap">
     <div class="setup-notice" id="profileSetupNotice">⚠ Backend not connected yet. Set <code>API_BASE</code> at the top of this file's script to your deployed Cloudflare Worker URL.</div>
@@ -204,8 +217,7 @@
   <div class="tool-head">
     <span class="code">COMPS.EXE — LIVE</span>
     <h2>Trading Comparables Screener</h2>
-    <p>Type any public company. Claude finds real, current, publicly traded peers in the same sector and region, and builds a comparables table with EV/Revenue, EV/EBITDA, and P/E multiples.</p>
-    <span class="proof">Proves: Trading &amp; Transaction Comps, Valuation, Financial Modeling</span>
+    <p>Takes any public company and finds real, current, publicly traded peers in the same sector and region, building a comparables table with EV/Revenue, EV/EBITDA, and P/E multiples.</p>
   </div>
   <div class="panel live-wrap">
     <div class="setup-notice" id="compsSetupNotice">⚠ Backend not connected yet. Set <code>API_BASE</code> at the top of this file's script to your deployed Cloudflare Worker URL.</div>
@@ -223,8 +235,7 @@
   <div class="tool-head">
     <span class="code">MARKETMAP.EXE — LIVE</span>
     <h2>Market Mapping Generator</h2>
-    <p>Type any sector. Claude builds a competitive landscape — sub-segments, and the real companies positioned as leaders, challengers, or niche players in each.</p>
-    <span class="proof">Proves: Market Mapping, Industry Studies, Competitive &amp; Market Intelligence</span>
+    <p>Takes any sector and builds a competitive landscape — sub-segments, and the real companies positioned as leaders, challengers, or niche players in each.</p>
   </div>
   <div class="panel live-wrap">
     <div class="setup-notice" id="mmSetupNotice">⚠ Backend not connected yet. Set <code>API_BASE</code> at the top of this file's script to your deployed Cloudflare Worker URL.</div>
@@ -234,6 +245,56 @@
     </div>
     <div class="live-status" id="mmStatus"></div>
     <div id="mmResults"></div>
+  </div>
+</section>
+
+<!-- TOOL: FP&A ANALYSIS -->
+<section class="tool" id="tool-fpa">
+  <div class="tool-head">
+    <span class="code">FPA.EXE — LIVE</span>
+    <h2>FP&amp;A Variance &amp; Forecast Analysis</h2>
+    <p>Upload a monthly P&amp;L (CSV or Excel) and get real variance analysis — month-over-month commentary that actively flags anomalies (unusual cost spikes, revenue drops, margin swings), plus a short forward forecast.</p>
+  </div>
+  <div class="panel live-wrap">
+    <div class="setup-notice" id="fpaSetupNotice">⚠ Backend not connected yet. Set <code>API_BASE</code> at the top of this file's script to your deployed Cloudflare Worker URL.</div>
+    <div class="live-controls">
+      <input type="file" id="fpaFile" accept=".csv,.xlsx,.xls" style="font-family:'IBM Plex Mono',monospace; font-size:13px; padding:9px; border:1px solid #cfccb9; background:var(--white); border-radius:2px;">
+      <button id="fpaRunBtn" onclick="runFPA()">ANALYZE</button>
+    </div>
+    <div class="live-status" id="fpaStatus">No file selected — <a href="sample-pnl.xlsx" download style="color:#8a6d1a;">download a sample monthly P&amp;L</a> to try this tool.</div>
+    <div id="fpaResults"></div>
+  </div>
+</section>
+
+<!-- TOOL: M&A MONITOR -->
+<section class="tool" id="tool-mam">
+  <div class="tool-head">
+    <span class="code">MAMONITOR.EXE — LIVE</span>
+    <h2>M&amp;A Monitor</h2>
+    <p>Pick a region and industry to pull real, recently announced M&amp;A transactions matching that combination — acquirer, target, deal value, and strategic rationale.</p>
+  </div>
+  <div class="panel live-wrap">
+    <div class="setup-notice" id="mamSetupNotice">⚠ Backend not connected yet. Set <code>API_BASE</code> at the top of this file's script to your deployed Cloudflare Worker URL.</div>
+    <div class="live-controls">
+      <select id="mamRegion">
+        <option>United States</option>
+        <option>Europe</option>
+        <option>Asia</option>
+        <option>Middle East</option>
+      </select>
+      <select id="mamIndustry">
+        <option>Technology</option>
+        <option>Healthcare</option>
+        <option>Financial Services</option>
+        <option>Energy</option>
+        <option>Industrials</option>
+        <option>Consumer &amp; Retail</option>
+        <option>Real Estate</option>
+      </select>
+      <button id="mamRunBtn" onclick="runMAMonitor()">FIND DEALS</button>
+    </div>
+    <div class="live-status" id="mamStatus"></div>
+    <div id="mamResults"></div>
   </div>
 </section>
 
@@ -247,7 +308,7 @@
 // SET THIS to your deployed Cloudflare Worker URL, e.g.
 // const API_BASE = "https://deal-terminal-backend.abhi-srcc.workers.dev";
 // ============================================================================
-const API_BASE = "https://deal-terminal-backend.abhi-srcc.workers.dev";
+const API_BASE = "";
 
 // ---------- Nav ----------
 document.getElementById('navEl').addEventListener('click', (e)=>{
@@ -303,7 +364,7 @@ async function callBackend(action, payload, statusElId, btnEl){
     const res = await fetch(API_BASE, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action, payload}) });
     const data = await res.json();
     if(data.error){ throw new Error(data.error); }
-    statusEl.textContent = data._served_from_cache ? 'Done (served from cache).' : 'Done.';
+    statusEl.textContent = 'Done.';
     return data;
   }catch(e){
     statusEl.textContent = 'Error: ' + e.message;
@@ -359,6 +420,10 @@ function renderOriginationResults(data){
     </div>`;
 
   try{
+    if(typeof Chart === 'undefined'){
+      document.getElementById('origResults').insertAdjacentHTML('beforeend', '<p style="font-family:\'IBM Plex Mono\',monospace;font-size:11.5px;color:#B4433D;margin-top:12px;">Chart library failed to load (network or ad-blocker may be blocking it) — table above is still accurate.</p>');
+      return;
+    }
     new Chart(document.getElementById('origTypeChart').getContext('2d'), {
       type:'doughnut',
       data:{ labels:Object.keys(typeCounts), datasets:[{ data:Object.values(typeCounts), backgroundColor:['#C9A227','#2E8B57','#B4433D','#5b6478','#8891a6'] }] },
@@ -461,6 +526,102 @@ function renderMarketMapResults(d){
     return `<div class="mm-segment"><h5>${seg.name}</h5><p>${seg.description||''}</p><div class="mm-players">${players}</div></div>`;
   }).join('');
   document.getElementById('mmResults').innerHTML = `<div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#8a8672;margin-bottom:4px;">${d.sector}</div>` + (html || '<p>No market map returned — try again.</p>');
+}
+
+// ---------- Tool: FP&A Analysis ----------
+document.getElementById('fpaFile').addEventListener('change', (e)=>{
+  const f = e.target.files[0];
+  const statusEl = document.getElementById('fpaStatus');
+  if(f){
+    statusEl.innerHTML = `Selected: <b>${f.name}</b> — click Analyze.`;
+    statusEl.className = 'live-status';
+  }
+});
+
+function fileToCsvText(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    const isExcel = /\.xlsx?$/i.test(file.name);
+    reader.onload = (e)=>{
+      try{
+        if(isExcel){
+          if(typeof XLSX === 'undefined'){ reject(new Error('Excel parser failed to load — try a .csv file instead, or reload the page.')); return; }
+          const wb = XLSX.read(e.target.result, {type:'binary'});
+          const sheet = wb.Sheets[wb.SheetNames[0]];
+          resolve(XLSX.utils.sheet_to_csv(sheet));
+        } else {
+          resolve(e.target.result);
+        }
+      }catch(err){ reject(err); }
+    };
+    reader.onerror = ()=>reject(new Error('Could not read file.'));
+    if(isExcel) reader.readAsBinaryString(file);
+    else reader.readAsText(file);
+  });
+}
+
+async function runFPA(){
+  const fileInput = document.getElementById('fpaFile');
+  const statusEl = document.getElementById('fpaStatus');
+  const btn = document.getElementById('fpaRunBtn');
+  if(!fileInput.files[0]){
+    statusEl.textContent = 'Choose a file first.';
+    statusEl.className = 'live-status err';
+    return;
+  }
+  let csvText;
+  try{
+    csvText = await fileToCsvText(fileInput.files[0]);
+  }catch(err){
+    statusEl.textContent = 'Error reading file: ' + err.message;
+    statusEl.className = 'live-status err';
+    return;
+  }
+  const data = await callBackend('fpa-variance', {csvText}, 'fpaStatus', btn);
+  if(!data) return;
+  renderFPAResults(data);
+}
+
+function renderFPAResults(d){
+  const commentary = (d.variance_commentary||[]).map(c=>`<div class="fpa-month"><div class="m">${c.month}</div>${c.commentary}</div>`).join('');
+  const forecastRows = (d.forecast_next_3_months||[]).map(f=>`<tr><td>${f.month}</td><td>${f.revenue}</td><td>${f.ebitda}</td></tr>`).join('');
+  const risks = (d.key_risks||[]).map(r=>`<li>${r}</li>`).join('');
+  document.getElementById('fpaResults').innerHTML = `
+    <h5 style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-transform:uppercase;color:#6b6852;margin:22px 0 6px;">Variance commentary</h5>
+    ${commentary || '<p>No commentary returned.</p>'}
+    <h5 style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-transform:uppercase;color:#6b6852;margin:22px 0 6px;">Forecast — next 3 months</h5>
+    <table class="fpa-forecast-table"><thead><tr><th>Month</th><th>Revenue</th><th>EBITDA</th></tr></thead><tbody>${forecastRows || '<tr><td colspan="3">No forecast returned.</td></tr>'}</tbody></table>
+    <h5 style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-transform:uppercase;color:#6b6852;margin:22px 0 6px;">Key risks</h5>
+    <ul class="fpa-risks">${risks || '<li>None flagged.</li>'}</ul>`;
+}
+
+// ---------- Tool: M&A Monitor ----------
+async function runMAMonitor(){
+  const region = document.getElementById('mamRegion').value;
+  const industry = document.getElementById('mamIndustry').value;
+  const btn = document.getElementById('mamRunBtn');
+  const data = await callBackend('ma-monitor', {region, industry}, 'mamStatus', btn);
+  if(!data) return;
+  renderMAMonitorResults(data);
+}
+
+function renderMAMonitorResults(d){
+  const deals = d.deals || [];
+  const rows = deals.map(x=>`
+    <tr>
+      <td><b>${x.acquirer}</b></td>
+      <td>${x.target}</td>
+      <td>${x.deal_value||'—'}</td>
+      <td>${x.date_announced||'—'}</td>
+      <td>${x.status||'—'}</td>
+      <td>${x.description||''}</td>
+    </tr>`).join('');
+  document.getElementById('mamResults').innerHTML = `
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#8a8672;margin-bottom:4px;">${d.industry} · ${d.region}</div>
+    <table class="mam-table">
+      <thead><tr><th>Acquirer</th><th>Target</th><th>Deal Value</th><th>Announced</th><th>Status</th><th>Rationale</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="6">No verified recent deals found for this combination — try a different region or industry.</td></tr>'}</tbody>
+    </table>`;
 }
 </script>
 </body>
