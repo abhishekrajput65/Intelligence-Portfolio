@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abhishek Rajput — Deal Intelligence Terminal</title>
+<meta name="description" content="Deal origination, valuation, and AI-augmented delivery tools built by Abhishek Rajput — Senior Manager, M&A Research & Advisory Delivery.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#0B0F19;
+    --ink-panel:#121826;
+    --ink-panel-2:#171f30;
+    --ink-line:#232c40;
+    --ink-muted:#8891a6;
+    --ink-muted-2:#5b6478;
+    --paper:#F2F0E4;
+    --paper-2:#e9e6d8;
+    --gold:#C9A227;
+    --gold-bright:#E6C34F;
+    --green:#2E8B57;
+    --red:#B4433D;
+    --white:#F7F6F2;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--ink);
+    color:var(--white);
+    font-family:'IBM Plex Sans',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Space Grotesk',sans-serif;
+    letter-spacing:-0.01em;
+  }
+  .mono{ font-family:'IBM Plex Mono',monospace; }
+  a{color:inherit;}
+  ::selection{ background:var(--gold); color:var(--ink); }
+  :focus-visible{ outline:2px solid var(--gold); outline-offset:2px; }
+
+  /* ---------- Ticker ---------- */
+  .ticker-wrap{
+    background:var(--gold);
+    color:var(--ink);
+    overflow:hidden;
+    white-space:nowrap;
+    border-bottom:1px solid #00000022;
+    position:sticky; top:0; z-index:100;
+  }
+  .ticker{
+    display:inline-block;
+    padding:8px 0;
+    animation:scroll 34s linear infinite;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    font-weight:600;
+    letter-spacing:0.02em;
+  }
+  .ticker span{ padding:0 28px; }
+  .ticker span.dim{ opacity:0.55; font-weight:500; }
+  @keyframes scroll{
+    0%{ transform:translateX(0); }
+    100%{ transform:translateX(-50%); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .ticker{ animation:none; }
+  }
+
+  /* ---------- Header / Nav ---------- */
+  header.top{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 5vw;
+    border-bottom:1px solid var(--ink-line);
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  .brand{ display:flex; flex-direction:column; }
+  .brand .name{ font-size:19px; font-weight:600; }
+  .brand .role{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-muted); letter-spacing:0.04em; margin-top:2px;}
+  nav.fkeys{ display:flex; gap:6px; flex-wrap:wrap; }
+  nav.fkeys button{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    background:var(--ink-panel);
+    color:var(--ink-muted);
+    border:1px solid var(--ink-line);
+    padding:9px 14px;
+    cursor:pointer;
+    letter-spacing:0.03em;
+    transition:all .15s ease;
+  }
+  nav.fkeys button:hover{ color:var(--white); border-color:var(--gold); }
+  nav.fkeys button.active{ color:var(--ink); background:var(--gold); border-color:var(--gold); }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding:70px 5vw 56px;
+    border-bottom:1px solid var(--ink-line);
+    display:grid;
+    grid-template-columns:1.3fr 1fr;
+    gap:48px;
+    align-items:end;
+  }
+  .hero .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--gold);
+    font-size:12.5px;
+    letter-spacing:0.08em;
+    margin-bottom:18px;
+  }
+  .hero h1{
+    font-size:clamp(32px,4.4vw,54px);
+    line-height:1.05;
+    font-weight:600;
+    margin:0 0 18px;
+  }
+  .hero h1 em{ font-style:normal; color:var(--gold); }
+  .hero p{
+    color:var(--ink-muted);
+    font-size:16.5px;
+    line-height:1.6;
+    max-width:56ch;
+    margin:0;
+  }
+  .hero .side{
+    border-left:1px solid var(--ink-line);
+    padding-left:32px;
+    display:flex; flex-direction:column; gap:16px;
+  }
+  .hero .side .stat{ display:flex; flex-direction:column; }
+  .hero .side .stat .num{ font-family:'Space Grotesk',sans-serif; font-size:30px; font-weight:600; color:var(--gold-bright);}
+  .hero .side .stat .lbl{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-muted); letter-spacing:0.03em; margin-top:2px;}
+
+  /* ---------- Sections ---------- */
+  section.tool{
+    padding:64px 5vw;
+    border-bottom:1px solid var(--ink-line);
+    display:none;
+  }
+  section.tool.active{ display:block; animation:fade .35s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  .tool-head{ margin-bottom:36px; max-width:74ch; }
+  .tool-head .code{
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--gold);
+    font-size:12px;
+    letter-spacing:0.08em;
+    display:block;
+    margin-bottom:10px;
+  }
+  .tool-head h2{ font-size:clamp(24px,3vw,34px); margin:0 0 12px; font-weight:600; }
+  .tool-head p{ color:var(--ink-muted); font-size:15.5px; line-height:1.6; margin:0; }
+  .tool-head .proof{
+    margin-top:16px;
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--ink);
+    background:var(--paper);
+    padding:8px 14px;
+    border-left:3px solid var(--gold);
+  }
+
+  .panel{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:2px;
+    box-shadow:0 30px 60px -30px rgba(0,0,0,0.6);
+  }
+
+  /* ---------- Tool 1: Football field ---------- */
+  .ff-wrap{ display:grid; grid-template-columns:340px 1fr; gap:0; }
+  .ff-inputs{ padding:32px; border-right:1px solid var(--paper-2); }
+  .ff-inputs h4{ margin:0 0 18px; font-size:13px; font-family:'IBM Plex Mono',monospace; letter-spacing:0.04em; color:var(--ink-muted-2); text-transform:uppercase;}
+  .ff-row{ margin-bottom:16px; }
+  .ff-row label{ display:block; font-size:12.5px; font-weight:600; margin-bottom:6px; color:#2b2b26;}
+  .ff-row .inputs2{ display:flex; gap:8px; }
+  .ff-row input{
+    width:100%;
+    font-family:'IBM Plex Mono',monospace;
+    padding:8px 10px;
+    border:1px solid #cfccb9;
+    background:var(--white);
+    font-size:13.5px;
+    border-radius:2px;
+  }
+  .ff-inputs .subtle{ font-size:11.5px; color:var(--ink-muted-2); margin-top:20px; line-height:1.5;}
+  .ff-chart{ padding:32px; }
+  #ffCanvasWrap{ height:340px; }
+  .ff-legend{ display:flex; gap:18px; margin-top:18px; flex-wrap:wrap; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#5b584a;}
+
+  /* ---------- Tool 2: Signal score ---------- */
+  .sig-wrap{ display:grid; grid-template-columns:1fr 320px; gap:0; }
+  .sig-inputs{ padding:32px; }
+  .sig-row{ margin-bottom:22px; }
+  .sig-row .lbl-row{ display:flex; justify-content:space-between; font-size:13px; font-weight:600; margin-bottom:8px; }
+  .sig-row .lbl-row .val{ font-family:'IBM Plex Mono',monospace; color:var(--gold); font-weight:700; }
+  input[type=range]{
+    width:100%; accent-color:#C9A227; height:4px;
+  }
+  select.sig-select{
+    width:100%; padding:9px 10px; font-family:'IBM Plex Sans',sans-serif; font-size:13.5px;
+    border:1px solid #cfccb9; background:var(--white); border-radius:2px;
+  }
+  .sig-score{
+    background:var(--ink); color:var(--white);
+    padding:32px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+  }
+  .sig-score .big{ font-family:'Space Grotesk',sans-serif; font-size:64px; font-weight:700; color:var(--gold-bright); line-height:1; }
+  .sig-score .out-of{ font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--ink-muted); margin-top:4px;}
+  .sig-score .verdict{ margin-top:18px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:8px 12px; border:1px solid var(--ink-line);}
+  .sig-score .verdict.hot{ color:var(--green); border-color:var(--green); }
+  .sig-score .verdict.watch{ color:var(--gold-bright); border-color:var(--gold); }
+  .sig-score .verdict.cold{ color:var(--ink-muted); }
+
+  /* ---------- Tool 3: dashboard ---------- */
+  .dash-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--paper-2); margin-bottom:1px;}
+  .dash-kpi{ background:var(--paper); padding:22px; }
+  .dash-kpi .n{ font-family:'Space Grotesk',sans-serif; font-size:30px; font-weight:700; }
+  .dash-kpi .l{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6b6852; margin-top:6px; letter-spacing:0.02em;}
+  .dash-charts{ display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--paper-2); }
+  .dash-chart-box{ background:var(--paper); padding:26px; }
+  .dash-chart-box h5{ margin:0 0 14px; font-size:12px; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:0.03em; color:#6b6852;}
+
+  /* ---------- Tool 4: AI Brief demo ---------- */
+  .ai-wrap{ padding:32px; }
+  .ai-input-row{ display:flex; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+  .ai-input-row input{
+    flex:1; min-width:220px; padding:12px 14px; font-family:'IBM Plex Mono',monospace; font-size:13.5px;
+    border:1px solid #cfccb9; background:var(--white); border-radius:2px;
+  }
+  .ai-input-row button{
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; padding:12px 20px;
+    background:var(--ink); color:var(--white); border:none; cursor:pointer; letter-spacing:0.03em;
+  }
+  .ai-input-row button:hover{ background:#222c42; }
+  .ai-flag{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#8a8672; margin-bottom:22px; }
+  .ai-output{
+    background:var(--white); border:1px solid #cfccb9; padding:26px; font-size:14px; line-height:1.65; color:#1c1c18;
+  }
+  .ai-output h4{ margin:0 0 4px; font-family:'Space Grotesk',sans-serif; font-size:19px; }
+  .ai-output .meta{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:#8a8672; margin-bottom:18px;}
+  .ai-output .sec{ margin-bottom:16px; }
+  .ai-output .sec b{ display:block; font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.03em; color:#6b6852; margin-bottom:6px;}
+  .flag-list{ list-style:none; padding:0; margin:0; }
+  .flag-list li{ padding:6px 0; border-bottom:1px dashed #ddd9c5; font-size:13.5px;}
+  .flag-list li:last-child{ border-bottom:none; }
+  .flag-list li b{ color:var(--red); }
+
+  /* ---------- Footer ---------- */
+  footer{ padding:40px 5vw 60px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px; align-items:center;}
+  footer .mono{ color:var(--ink-muted); font-size:12.5px; }
+  footer a.cta{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--gold); text-decoration:none; border-bottom:1px solid var(--gold); padding-bottom:2px;}
+
+  @media (max-width:860px){
+    .hero{ grid-template-columns:1fr; }
+    .hero .side{ border-left:none; padding-left:0; border-top:1px solid var(--ink-line); padding-top:24px; flex-direction:row; flex-wrap:wrap;}
+    .ff-wrap, .sig-wrap{ grid-template-columns:1fr; }
+    .ff-inputs{ border-right:none; border-bottom:1px solid var(--paper-2); }
+    .sig-score{ border-top:1px solid var(--paper-2); }
+    .dash-grid, .dash-charts{ grid-template-columns:1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ticker-wrap">
+  <div class="ticker mono" id="tickerEl"></div>
+</div>
+
+<header class="top">
+  <div class="brand">
+    <div class="name">ABHISHEK RAJPUT</div>
+    <div class="role">SENIOR MANAGER · M&amp;A RESEARCH &amp; ADVISORY DELIVERY · GURGAON</div>
+  </div>
+  <nav class="fkeys" id="navEl">
+    <button data-tool="ff" class="active">F1 · VALUATION</button>
+    <button data-tool="sig">F2 · SIGNAL SCORE</button>
+    <button data-tool="dash">F3 · TEAM PERFORMANCE</button>
+    <button data-tool="ai">F4 · AI BRIEF</button>
+  </nav>
+</header>
+
+<section class="hero">
+  <div>
+    <div class="eyebrow">DEAL INTELLIGENCE TERMINAL</div>
+    <h1>Tools I built to run the same<br><em>deal workflows I lead</em> at scale.</h1>
+    <p>15+ years across M&amp;A execution, transaction advisory, and AI-augmented research delivery. Every tool below is a working rebuild of something on my CV — not a generic AI demo. Pick a function key.</p>
+  </div>
+  <div class="side">
+    <div class="stat"><span class="num">5x</span><span class="lbl">TEAM SCALED · 2022–25</span></div>
+    <div class="stat"><span class="num">50%</span><span class="lbl">YoY BILLING GROWTH · 2024</span></div>
+    <div class="stat"><span class="num">35%</span><span class="lbl">RESEARCH TURNAROUND CUT</span></div>
+  </div>
+</section>
+
+<!-- TOOL 1: FOOTBALL FIELD -->
+<section class="tool active" id="tool-ff">
+  <div class="tool-head">
+    <span class="code">F1 // VALUATION.EXE</span>
+    <h2>Football Field Valuation Chart</h2>
+    <p>The standard banker artifact for presenting a valuation range across methodologies. Enter low/high values from each method — the chart builds itself, live.</p>
+    <span class="proof">Proves: Valuation · Financial Modeling · Pitchbooks &amp; Information Memorandums</span>
+  </div>
+  <div class="panel ff-wrap">
+    <div class="ff-inputs">
+      <h4>Valuation inputs ($M)</h4>
+      <div class="ff-row"><label>DCF (WACC-based)</label><div class="inputs2"><input type="number" id="ff_dcf_lo" value="420"><input type="number" id="ff_dcf_hi" value="560"></div></div>
+      <div class="ff-row"><label>Trading Comps</label><div class="inputs2"><input type="number" id="ff_comp_lo" value="380"><input type="number" id="ff_comp_hi" value="490"></div></div>
+      <div class="ff-row"><label>Precedent Transactions</label><div class="inputs2"><input type="number" id="ff_prec_lo" value="440"><input type="number" id="ff_prec_hi" value="610"></div></div>
+      <div class="ff-row"><label>52-Week Trading Range</label><div class="inputs2"><input type="number" id="ff_trade_lo" value="360"><input type="number" id="ff_trade_hi" value="470"></div></div>
+      <button onclick="renderFF()" style="width:100%;padding:11px;font-family:'IBM Plex Mono',monospace;background:#0B0F19;color:#fff;border:none;cursor:pointer;margin-top:6px;letter-spacing:.03em;">REBUILD CHART</button>
+      <div class="subtle">Left-click and edit any range, then rebuild. This is the same low/high-per-method structure used in a live pitchbook valuation page.</div>
+    </div>
+    <div class="ff-chart">
+      <div id="ffCanvasWrap"><canvas id="ffChart"></canvas></div>
+      <div class="ff-legend">
+        <span>▮ Implied enterprise value range, $M</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOL 2: SIGNAL SCORE -->
+<section class="tool" id="tool-sig">
+  <div class="tool-head">
+    <span class="code">F2 // SIGNAL.EXE</span>
+    <h2>Deal Origination Signal Score</h2>
+    <p>A rule-based scoring model that mirrors a proactive origination tool: feed it market signals on a company, get an acquisition-readiness score and a verdict, the way an origination screen flags early-stage leads for a deal team.</p>
+    <span class="proof">Proves: led a proactive deal-origination opportunity tool that translated market signals into early-stage M&amp;A leads</span>
+  </div>
+  <div class="panel sig-wrap">
+    <div class="sig-inputs">
+      <div class="sig-row">
+        <div class="lbl-row"><span>Leadership change signal</span><span class="val" id="v1">40</span></div>
+        <input type="range" id="s1" min="0" max="100" value="40" oninput="renderSig()">
+      </div>
+      <div class="sig-row">
+        <div class="lbl-row"><span>Recent funding / capital event</span><span class="val" id="v2">55</span></div>
+        <input type="range" id="s2" min="0" max="100" value="55" oninput="renderSig()">
+      </div>
+      <div class="sig-row">
+        <div class="lbl-row"><span>Sector M&amp;A heat (12-mo deal count)</span><span class="val" id="v3">65</span></div>
+        <input type="range" id="s3" min="0" max="100" value="65" oninput="renderSig()">
+      </div>
+      <div class="sig-row">
+        <div class="lbl-row"><span>Ownership tenure / succession risk</span><span class="val" id="v4">30</span></div>
+        <input type="range" id="s4" min="0" max="100" value="30" oninput="renderSig()">
+      </div>
+      <div class="sig-row">
+        <div class="lbl-row"><span>Financial distress indicators</span><span class="val" id="v5">20</span></div>
+        <input type="range" id="s5" min="0" max="100" value="20" oninput="renderSig()">
+      </div>
+      <div class="sig-row">
+        <label style="font-size:12.5px;font-weight:600;display:block;margin-bottom:6px;">Deal type weighting</label>
+        <select class="sig-select" id="s6" onchange="renderSig()">
+          <option value="1">Standard weighting</option>
+          <option value="1.15">Weight toward buy-side (strategic)</option>
+          <option value="1.1">Weight toward sponsor / PE</option>
+        </select>
+      </div>
+    </div>
+    <div class="sig-score">
+      <div class="big" id="sigScore">62</div>
+      <div class="out-of">/ 100 · ACQUISITION READINESS</div>
+      <div class="verdict watch" id="sigVerdict">WATCHLIST — monitor next 90 days</div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOL 3: DASHBOARD -->
+<section class="tool" id="tool-dash">
+  <div class="tool-head">
+    <span class="code">F3 // PERFORMANCE.EXE</span>
+    <h2>Deal-Team Performance Dashboard</h2>
+    <p>My own delivery metrics from Evalueserve (2018–present), visualized the way I'd present them to a client steering committee. These are the real, disclosed numbers from my CV — not sample data.</p>
+    <span class="proof">Proves: 5x team scaling · 50% YoY billing growth · 30% utilization lift · 35% turnaround reduction</span>
+  </div>
+  <div class="panel">
+    <div class="dash-grid">
+      <div class="dash-kpi"><div class="n">5x</div><div class="l">TEAM SIZE GROWTH · 2022–25</div></div>
+      <div class="dash-kpi"><div class="n">50%</div><div class="l">VARIABLE BILLING · YoY 2024</div></div>
+      <div class="dash-kpi"><div class="n">30%</div><div class="l">UTILIZATION LIFT · ACUITY, 2016–18</div></div>
+      <div class="dash-kpi"><div class="n">35%</div><div class="l">RESEARCH TURNAROUND CUT · AI AUTOMATION</div></div>
+    </div>
+    <div class="dash-charts">
+      <div class="dash-chart-box"><h5>Team headcount, 2022–2025</h5><canvas id="teamChart" height="200"></canvas></div>
+      <div class="dash-chart-box"><h5>Analyst hours freed per month (LLM automation)</h5><canvas id="hoursChart" height="200"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOL 4: AI BRIEF -->
+<section class="tool" id="tool-ai">
+  <div class="tool-head">
+    <span class="code">F4 // BRIEF.EXE — DEMO MODE</span>
+    <h2>AI Company Intelligence Brief</h2>
+    <p>Type any company name and generate a structured one-pager: overview, likely synergies, and diligence flags — the way I use LLM automation for target screening and pitchbook drafting today.</p>
+    <span class="proof">Proves: Built LLM-based research automation for pitchbook drafting, target screening and opportunity identification</span>
+  </div>
+  <div class="panel ai-wrap">
+    <div class="ai-input-row">
+      <input type="text" id="aiCompany" placeholder="Type a company name, e.g. 'Northwind Logistics'" value="Northwind Logistics">
+      <button onclick="renderAI()">GENERATE BRIEF</button>
+    </div>
+    <div class="ai-flag">⚠ Demo mode — showing a sample generation pattern with placeholder data. Live LLM generation is the next build milestone on my AI-automation roadmap, once the backend hosting layer is in place.</div>
+    <div class="ai-output" id="aiOutput"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="mono">© 2026 Abhishek Rajput — built to demonstrate AI-augmented delivery, not to replace a conversation.</div>
+  <a class="cta" href="https://www.linkedin.com/in/abhishekrajput65" target="_blank">CONNECT ON LINKEDIN →</a>
+</footer>
+
+<script>
+// ---------- Nav ----------
+document.getElementById('navEl').addEventListener('click', (e)=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  document.querySelectorAll('nav.fkeys button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('section.tool').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tool-'+btn.dataset.tool).classList.add('active');
+});
+
+// ---------- Ticker ----------
+const tickerItems = [
+  "5X TEAM SCALE — 2022–25","50% YoY BILLING GROWTH — 2024","35% RESEARCH TURNAROUND CUT — LLM AUTOMATION",
+  "30% UTILIZATION LIFT — ACUITY KNOWLEDGE PARTNERS","20+ ANALYSTS — APAC & UK COVERAGE","15+ YEARS — M&A EXECUTION & ADVISORY DELIVERY"
+];
+const tickerHTML = tickerItems.map(t=>`<span>${t}</span><span class="dim">//</span>`).join('');
+document.getElementById('tickerEl').innerHTML = tickerHTML + tickerHTML;
+
+// ---------- Chart defaults ----------
+Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+Chart.defaults.color = '#5b584a';
+
+// ---------- Tool 1: Football field ----------
+let ffChartInstance = null;
+function renderFF(){
+  const rows = [
+    {label:'DCF', lo:+document.getElementById('ff_dcf_lo').value, hi:+document.getElementById('ff_dcf_hi').value},
+    {label:'Trading Comps', lo:+document.getElementById('ff_comp_lo').value, hi:+document.getElementById('ff_comp_hi').value},
+    {label:'Precedent Trans.', lo:+document.getElementById('ff_prec_lo').value, hi:+document.getElementById('ff_prec_hi').value},
+    {label:'52-Wk Trading', lo:+document.getElementById('ff_trade_lo').value, hi:+document.getElementById('ff_trade_hi').value},
+  ];
+  const ctx = document.getElementById('ffChart').getContext('2d');
+  if(ffChartInstance) ffChartInstance.destroy();
+  ffChartInstance = new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:rows.map(r=>r.label),
+      datasets:[
+        { label:'base', data:rows.map(r=>r.lo), backgroundColor:'rgba(0,0,0,0)', stack:'s' },
+        { label:'range', data:rows.map(r=>r.hi-r.lo), backgroundColor:'#C9A227', stack:'s', borderRadius:2 }
+      ]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ callbacks:{ label:(c)=>{
+          if(c.datasetIndex===1){ const r=rows[c.dataIndex]; return `$${r.lo}M – $${r.hi}M`; }
+          return null;
+        }}}
+      },
+      scales:{
+        x:{ grid:{color:'#ddd9c5'}, ticks:{callback:v=>'$'+v+'M'} },
+        y:{ grid:{display:false} }
+      }
+    }
+  });
+}
+
+// ---------- Tool 2: Signal score ----------
+function renderSig(){
+  const s1=+document.getElementById('s1').value, s2=+document.getElementById('s2').value,
+        s3=+document.getElementById('s3').value, s4=+document.getElementById('s4').value,
+        s5=+document.getElementById('s5').value, w=+document.getElementById('s6').value;
+  document.getElementById('v1').textContent=s1;
+  document.getElementById('v2').textContent=s2;
+  document.getElementById('v3').textContent=s3;
+  document.getElementById('v4').textContent=s4;
+  document.getElementById('v5').textContent=s5;
+  const raw = (s1*0.22 + s2*0.22 + s3*0.24 + s4*0.16 + s5*0.16) * w;
+  const score = Math.min(100, Math.round(raw));
+  document.getElementById('sigScore').textContent = score;
+  const verdictEl = document.getElementById('sigVerdict');
+  if(score>=70){ verdictEl.textContent='HOT — flag to deal team this week'; verdictEl.className='verdict hot'; }
+  else if(score>=40){ verdictEl.textContent='WATCHLIST — monitor next 90 days'; verdictEl.className='verdict watch'; }
+  else { verdictEl.textContent='LOW PRIORITY — passive tracking only'; verdictEl.className='verdict cold'; }
+}
+
+// ---------- Tool 3: Dashboard ----------
+function renderDash(){
+  new Chart(document.getElementById('teamChart').getContext('2d'),{
+    type:'line',
+    data:{ labels:['2022','2023','2024','2025'], datasets:[{
+      data:[4,9,15,20], borderColor:'#C9A227', backgroundColor:'rgba(201,162,39,0.12)', fill:true, tension:0.3, pointRadius:4, pointBackgroundColor:'#0B0F19'
+    }]},
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ y:{ grid:{color:'#ddd9c5'}, ticks:{callback:v=>v+' analysts'} }, x:{grid:{display:false}} } }
+  });
+  new Chart(document.getElementById('hoursChart').getContext('2d'),{
+    type:'bar',
+    data:{ labels:['Pre-automation','Post-automation'], datasets:[{
+      data:[0,120], backgroundColor:['#ddd9c5','#2E8B57'], borderRadius:3
+    }]},
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ y:{ grid:{color:'#ddd9c5'}, ticks:{callback:v=>v+' hrs/mo'} }, x:{grid:{display:false}} } }
+  });
+}
+
+// ---------- Tool 4: AI Brief demo ----------
+function renderAI(){
+  const name = document.getElementById('aiCompany').value || 'Target Company';
+  document.getElementById('aiOutput').innerHTML = `
+    <h4>${name} — Company Intelligence Brief</h4>
+    <div class="meta">SAMPLE OUTPUT · GENERATED IN DEMO MODE · ${new Date().toLocaleDateString()}</div>
+    <div class="sec"><b>Overview</b>Mid-market player in its sector with a multi-year track record and a regional customer base. Ownership structure and recent signals suggest a plausible window for strategic conversations.</div>
+    <div class="sec"><b>Likely synergies</b>Complementary geographic footprint, potential cost synergies in shared back-office functions, and cross-sell opportunity across existing client relationships.</div>
+    <div class="sec"><b>Diligence flags</b>
+      <ul class="flag-list">
+        <li><b>Medium</b> — Customer concentration in top 3 accounts (illustrative)</li>
+        <li><b>Low</b> — Standard change-of-control language expected in key contracts</li>
+        <li><b>Watch</b> — Sector-wide margin compression trend to validate in QoE</li>
+      </ul>
+    </div>
+  `;
+}
+
+// ---------- Init ----------
+renderFF();
+renderSig();
+renderDash();
+renderAI();
+</script>
+</body>
+</html>
