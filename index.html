@@ -175,17 +175,25 @@
   <div class="tool-head">
     <span class="code">ORIGINATION.EXE — LIVE</span>
     <h2>Deal Origination Scanner</h2>
-    <p>Tracks current, real public signals in the sector you pick — leadership changes, PE holding periods, funding rounds, distress indicators — and flags proactive M&amp;A, IPO, restructuring, debt-raise, and JV opportunities before anything is announced.</p>
+    <p>Tracks current, real public signals in the region and industry you pick — leadership changes, PE holding periods, funding rounds, distress indicators — and flags proactive M&amp;A, IPO, restructuring, debt-raise, and JV opportunities before anything is announced.</p>
   </div>
   <div class="panel live-wrap">
     <div class="setup-notice" id="origSetupNotice">⚠ Backend not connected yet. Set <code>API_BASE</code> at the top of this file's script to your deployed Cloudflare Worker URL.</div>
     <div class="live-controls">
-      <select id="origSector">
-        <option>US Healthcare Services</option>
-        <option>US Industrial Manufacturing</option>
-        <option>US Fintech &amp; Payments</option>
-        <option>US Software / SaaS</option>
-        <option>US Consumer &amp; Retail</option>
+      <select id="origRegion">
+        <option>United States</option>
+        <option>Europe</option>
+        <option>Asia</option>
+        <option>Middle East</option>
+      </select>
+      <select id="origIndustry">
+        <option>Technology</option>
+        <option>Healthcare</option>
+        <option>Financial Services</option>
+        <option>Energy</option>
+        <option>Industrials</option>
+        <option>Consumer &amp; Retail</option>
+        <option>Real Estate</option>
       </select>
       <button id="origRunBtn" onclick="runOrigination()">RUN SCAN</button>
     </div>
@@ -308,7 +316,7 @@
 // SET THIS to your deployed Cloudflare Worker URL, e.g.
 // const API_BASE = "https://deal-terminal-backend.abhi-srcc.workers.dev";
 // ============================================================================
-const API_BASE = "https://deal-terminal-backend.abhi-srcc.workers.dev";
+const API_BASE = "";
 
 // ---------- Nav ----------
 document.getElementById('navEl').addEventListener('click', (e)=>{
@@ -359,7 +367,7 @@ async function callBackend(action, payload, statusElId, btnEl){
   }
   btnEl.disabled = true;
   statusEl.className = 'live-status';
-  statusEl.textContent = 'Running live query against Claude + web search — this can take 10-30 seconds...';
+  statusEl.textContent = 'Running live query against AI tools + web search — this can take 10-30 seconds...';
   try{
     const res = await fetch(API_BASE, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action, payload}) });
     const data = await res.json();
@@ -377,9 +385,10 @@ async function callBackend(action, payload, statusElId, btnEl){
 
 // ---------- Tool: Origination ----------
 async function runOrigination(){
-  const sector = document.getElementById('origSector').value;
+  const region = document.getElementById('origRegion').value;
+  const industry = document.getElementById('origIndustry').value;
   const btn = document.getElementById('origRunBtn');
-  const data = await callBackend('origination', {sector}, 'origStatus', btn);
+  const data = await callBackend('origination', {region, industry}, 'origStatus', btn);
   if(!data) return;
   renderOriginationResults(data);
 }
@@ -405,10 +414,10 @@ function renderOriginationResults(data){
   document.getElementById('origResults').innerHTML = `
     <div class="orig-grid">
       <div class="orig-panel">
-        <h5>Opportunities — ${data.sector} (${opps.length} found)</h5>
+        <h5>Opportunities — ${data.industry} · ${data.region} (${opps.length} found)</h5>
         <table class="opp-table">
           <thead><tr><th>Company</th><th>Type</th><th>Horizon</th><th>Confidence</th><th>Rationale</th></tr></thead>
-          <tbody>${rows || '<tr><td colspan="5">No fully-named opportunities surfaced this run — try again or pick a different sector.</td></tr>'}</tbody>
+          <tbody>${rows || '<tr><td colspan="5">No fully-named opportunities surfaced this run — try again or pick a different combination.</td></tr>'}</tbody>
         </table>
       </div>
       <div class="orig-panel">
