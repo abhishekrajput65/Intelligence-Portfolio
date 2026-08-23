@@ -10,6 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js';document.head.appendChild(s);"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';document.head.appendChild(s);"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js';document.head.appendChild(s);"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js" onerror="this.onerror=null;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js';document.head.appendChild(s);"></script>
 <style>
   :root{
     --ink:#0B0F19;
@@ -58,10 +60,22 @@
   .live-dot{ display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--green); margin-left:7px; box-shadow:0 0 6px var(--green); }
   nav.fkeys button.active .live-dot{ background:#0B0F19; box-shadow:none; }
 
-  .hero{ padding:56px 5vw 44px; border-bottom:1px solid var(--ink-line); }
+  .hero{ padding:56px 5vw 44px; border-bottom:1px solid var(--ink-line); display:grid; grid-template-columns:1.3fr 1fr; gap:48px; align-items:start; }
   .hero .eyebrow{ font-family:'IBM Plex Mono',monospace; color:var(--gold); font-size:12.5px; letter-spacing:0.08em; margin-bottom:16px; }
   .hero h1{ font-size:clamp(26px,3.2vw,38px); line-height:1.15; font-weight:600; margin:0 0 14px; max-width:34ch; }
   .hero p{ color:var(--ink-muted); font-size:15.5px; line-height:1.6; max-width:62ch; margin:0; }
+
+  .hero-right{ background:var(--ink-panel); border:1px solid var(--ink-line); padding:20px; }
+  .pulse-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px; flex-wrap:wrap; gap:6px; }
+  .pulse-title{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:0.06em; color:var(--gold); }
+  .pulse-sub{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--ink-muted); }
+  .pulse-region{ margin-bottom:14px; }
+  .pulse-region:last-child{ margin-bottom:0; }
+  .pulse-region h6{ margin:0 0 6px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-muted-2); }
+  .pulse-item{ font-size:12.5px; line-height:1.5; padding:6px 0; border-bottom:1px solid var(--ink-line); }
+  .pulse-item:last-child{ border-bottom:none; }
+  .pulse-item .co{ font-weight:600; color:var(--white); }
+  .pulse-item .meta{ font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--ink-muted); }
 
   section.tool{ padding:56px 5vw; border-bottom:1px solid var(--ink-line); display:none; }
   section.tool.active{ display:block; animation:fade .35s ease; }
@@ -92,6 +106,7 @@
   .pill.high{ background:#e4f2e9; color:var(--green); }
   .pill.medium{ background:#fbf1d9; color:#8a6d1a; }
   .pill.low{ background:#f0eee5; color:#8a8672; }
+  .pill.none{ background:#f0eee5; color:#8a8672; }
 
   .orig-grid{ display:grid; grid-template-columns:1.3fr 1fr; gap:1px; background:var(--paper-2); margin-top:22px;}
   .orig-panel{ background:var(--paper); padding:24px; }
@@ -134,11 +149,32 @@
   .fpa-risks{ margin-top:14px; padding-left:20px; }
   .fpa-risks li{ font-size:13.5px; margin-bottom:6px; }
 
-  footer{ padding:34px 5vw 50px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px; align-items:center;}
+  footer{ padding:20px 5vw 50px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:16px; align-items:center;}
   footer .mono{ color:var(--ink-muted); font-size:12.5px; }
   footer a.cta{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--gold); text-decoration:none; border-bottom:1px solid var(--gold); padding-bottom:2px;}
+  .disclaimer-bar{ padding:16px 5vw; border-top:1px solid var(--ink-line); }
+  .disclaimer-bar p{ margin:0; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.6; color:var(--ink-muted-2); max-width:90ch; }
+
+  /* ---------- Verification badge ---------- */
+  .verify-badge{ margin-top:18px; }
+  .verify-toggle{ display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#2E7D4F; background:#e4f2e9; border:1px solid #b9ddc6; padding:5px 12px; border-radius:20px; cursor:pointer; user-select:none; }
+  .verify-toggle:before{ content:"✓"; font-weight:700; }
+  .verify-panel{ display:none; margin-top:10px; background:var(--white); border:1px solid #ddd9c5; padding:14px 16px; font-size:12px; }
+  .verify-panel.open{ display:block; }
+  .verify-panel .vp-label{ font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; color:#6b6852; letter-spacing:0.03em; margin-bottom:4px; }
+  .verify-panel .vp-sources{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .verify-panel .vp-source-pill{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; background:#f0eee5; padding:3px 9px; border-radius:12px; color:#5b584a; }
+  .verify-panel .vp-note{ color:#3a3a30; line-height:1.5; }
+
+  /* ---------- Export bar ---------- */
+  .export-bar{ display:flex; gap:8px; margin-top:18px; align-items:center; }
+  .export-label{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#8a8672; margin-right:2px; }
+  .export-btn{ display:inline-flex; align-items:center; gap:5px; font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--white); border:1px solid #cfccb9; color:#3a3a30; padding:6px 12px; border-radius:3px; cursor:pointer; transition:all .15s ease; }
+  .export-btn:hover{ border-color:var(--gold); background:#fff8e6; }
+  .export-btn svg{ width:13px; height:13px; }
 
   @media (max-width:860px){
+    .hero{ grid-template-columns:1fr; }
     .orig-grid, .profile-grid{ grid-template-columns:1fr; }
   }
 </style>
@@ -161,13 +197,25 @@
     <button data-tool="mm">Market Map <span class="live-dot"></span></button>
     <button data-tool="fpa">FP&amp;A Analysis <span class="live-dot"></span></button>
     <button data-tool="mam">M&amp;A Monitor <span class="live-dot"></span></button>
+    <button data-tool="qoe">Quality of Earnings <span class="live-dot"></span></button>
+    <button data-tool="bcb">Business Case <span class="live-dot"></span></button>
+    <button data-tool="stk">Stakeholder Map <span class="live-dot"></span></button>
   </nav>
 </header>
 
 <section class="hero">
-  <div class="eyebrow">DEAL INTELLIGENCE TERMINAL</div>
-  <h1>A working demonstration of AI-augmented financial, deal, and business research.</h1>
-  <p>Each tool below runs live, combining real-time web research with structured analysis to produce decision-ready output — the kind of research summary that would otherwise take an analyst hours to pull together by hand.</p>
+  <div class="hero-left">
+    <div class="eyebrow">DEAL INTELLIGENCE TERMINAL</div>
+    <h1>A working demonstration of AI-augmented financial, deal, and business research.</h1>
+    <p>Each tool below runs live, combining real-time web research with structured analysis to produce decision-ready output — the kind of research summary that would otherwise take an analyst hours to pull together by hand.</p>
+  </div>
+  <div class="hero-right">
+    <div class="pulse-head">
+      <span class="pulse-title">GLOBAL CORPORATE PULSE</span>
+      <span class="pulse-sub" id="pulseStatus">Loading live developments…</span>
+    </div>
+    <div id="pulseResults"></div>
+  </div>
 </section>
 
 <!-- TOOL: ORIGINATION -->
@@ -306,6 +354,64 @@
   </div>
 </section>
 
+<!-- TOOL: QUALITY OF EARNINGS -->
+<section class="tool" id="tool-qoe">
+  <div class="tool-head">
+    <span class="code">QOE.EXE — LIVE</span>
+    <h2>Quality of Earnings</h2>
+    <p>Takes any company and reviews its most recent reported results — flagging one-time items, non-recurring gains, and working-capital anomalies that distort reported EBITDA, and calculating a normalized figure where adjustments apply.</p>
+  </div>
+  <div class="panel live-wrap">
+    <div class="setup-notice" id="qoeSetupNotice">⚠ Backend not connected yet. Set <code>API_BASE</code> at the top of this file's script to your deployed Cloudflare Worker URL.</div>
+    <div class="live-controls">
+      <input type="text" id="qoeCompany" placeholder="Type a real company name, e.g. 'Salesforce'" value="Salesforce">
+      <button id="qoeRunBtn" onclick="runQoE()">RUN QOE REVIEW</button>
+    </div>
+    <div class="live-status" id="qoeStatus"></div>
+    <div id="qoeResults"></div>
+  </div>
+</section>
+
+<!-- TOOL: BUSINESS CASE BUILDER -->
+<section class="tool" id="tool-bcb">
+  <div class="tool-head">
+    <span class="code">BUSINESSCASE.EXE — LIVE</span>
+    <h2>Business Case Builder</h2>
+    <p>Takes any company and builds a structured business case grounded in its current, real market position — executive summary, SWOT, strategic options, and a recommended path forward.</p>
+  </div>
+  <div class="panel live-wrap">
+    <div class="setup-notice" id="bcbSetupNotice">⚠ Backend not connected yet. Set <code>API_BASE</code> at the top of this file's script to your deployed Cloudflare Worker URL.</div>
+    <div class="live-controls">
+      <input type="text" id="bcbCompany" placeholder="Type a real company name, e.g. 'Nike'" value="Nike">
+      <button id="bcbRunBtn" onclick="runBusinessCase()">BUILD BUSINESS CASE</button>
+    </div>
+    <div class="live-status" id="bcbStatus"></div>
+    <div id="bcbResults"></div>
+  </div>
+</section>
+
+<!-- TOOL: STAKEHOLDER & RELATIONSHIP MAPPER -->
+<section class="tool" id="tool-stk">
+  <div class="tool-head">
+    <span class="code">STAKEHOLDER.EXE — LIVE</span>
+    <h2>Stakeholder &amp; Relationship Mapper</h2>
+    <p>Takes any company and builds an account stakeholder map — real, current executives and board members, with background and engagement context, the way a client-facing team would prep before an account.</p>
+  </div>
+  <div class="panel live-wrap">
+    <div class="setup-notice" id="stkSetupNotice">⚠ Backend not connected yet. Set <code>API_BASE</code> at the top of this file's script to your deployed Cloudflare Worker URL.</div>
+    <div class="live-controls">
+      <input type="text" id="stkCompany" placeholder="Type a real company name, e.g. 'Adobe'" value="Adobe">
+      <button id="stkRunBtn" onclick="runStakeholderMap()">BUILD STAKEHOLDER MAP</button>
+    </div>
+    <div class="live-status" id="stkStatus"></div>
+    <div id="stkResults"></div>
+  </div>
+</section>
+
+<div class="disclaimer-bar">
+  <p>Outputs on this page are generated by AI using live web research and may contain errors or omissions. Figures should be independently verified before use in any decision-making context.</p>
+</div>
+
 <footer>
   <div class="mono">© 2026 Abhishek Rajput</div>
   <a class="cta" href="https://www.linkedin.com/in/abhishekrajput65/" target="_blank">CONNECT ON LINKEDIN →</a>
@@ -428,6 +534,9 @@ function renderOriginationResults(data){
       </div>
     </div>`;
 
+  renderVerificationBadge('origResults', data.verification);
+  renderExportBar('origResults', 'Deal Origination - ' + (data.industry||'') + ' ' + (data.region||''), data);
+
   try{
     if(typeof Chart === 'undefined'){
       document.getElementById('origResults').insertAdjacentHTML('beforeend', '<p style="font-family:\'IBM Plex Mono\',monospace;font-size:11.5px;color:#B4433D;margin-top:12px;">Chart library failed to load (network or ad-blocker may be blocking it) — table above is still accurate.</p>');
@@ -486,6 +595,8 @@ function renderProfileResults(d){
       <div class="profile-card"><h5>Key management</h5>${mgmt || '<div class="row"><span>—</span><span></span></div>'}</div>
       <div class="profile-card"><h5>Recent news</h5>${news || '<div class="news-item">No recent items found.</div>'}</div>
     </div>`;
+  renderVerificationBadge('profileResults', d.verification);
+  renderExportBar('profileResults', 'Company Profile - ' + (d.company||''), d);
 }
 
 // ---------- Tool: Comps ----------
@@ -517,6 +628,8 @@ function renderCompsResults(d){
       </tbody>
     </table>
     <div class="comps-note">As of ${d.as_of || 'recent'} · ${d.note || ''}</div>`;
+  renderVerificationBadge('compsResults', d.verification);
+  renderExportBar('compsResults', 'Trading Comps - ' + (d.target||''), d);
 }
 
 // ---------- Tool: Market Map ----------
@@ -535,6 +648,8 @@ function renderMarketMapResults(d){
     return `<div class="mm-segment"><h5>${seg.name}</h5><p>${seg.description||''}</p><div class="mm-players">${players}</div></div>`;
   }).join('');
   document.getElementById('mmResults').innerHTML = `<div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#8a8672;margin-bottom:4px;">${d.sector}</div>` + (html || '<p>No market map returned — try again.</p>');
+  renderVerificationBadge('mmResults', d.verification);
+  renderExportBar('mmResults', 'Market Map - ' + (d.sector||''), d);
 }
 
 // ---------- Tool: FP&A Analysis ----------
@@ -602,6 +717,7 @@ function renderFPAResults(d){
     <table class="fpa-forecast-table"><thead><tr><th>Month</th><th>Revenue</th><th>EBITDA</th></tr></thead><tbody>${forecastRows || '<tr><td colspan="3">No forecast returned.</td></tr>'}</tbody></table>
     <h5 style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-transform:uppercase;color:#6b6852;margin:22px 0 6px;">Key risks</h5>
     <ul class="fpa-risks">${risks || '<li>None flagged.</li>'}</ul>`;
+  renderExportBar('fpaResults', 'FPA Variance Analysis', d);
 }
 
 // ---------- Tool: M&A Monitor ----------
@@ -631,6 +747,402 @@ function renderMAMonitorResults(d){
       <thead><tr><th>Acquirer</th><th>Target</th><th>Deal Value</th><th>Announced</th><th>Status</th><th>Rationale</th></tr></thead>
       <tbody>${rows || '<tr><td colspan="6">No verified recent deals found for this combination — try a different region or industry.</td></tr>'}</tbody>
     </table>`;
+  renderVerificationBadge('mamResults', d.verification);
+  renderExportBar('mamResults', 'M&A Monitor', d);
+}
+
+// ============================================================================
+// SHARED: verification badge + export system (PDF / Word / Excel)
+// ============================================================================
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function sanitizeFilename(s){
+  return (s || 'export').replace(/[^a-z0-9]+/gi,'_').replace(/^_+|_+$/g,'').slice(0,60) || 'export';
+}
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1500);
+}
+function humanizeKey(key){
+  return key.replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
+}
+
+// Walks any tool's result object into a generic list of exportable sections —
+// this is what lets one export system work across every tool without a
+// bespoke formatter per tool.
+function dataToSections(data){
+  const sections = [];
+  const skip = new Set(['verification', '_served_from_cache']);
+  const topLevelRows = [];
+
+  Object.keys(data || {}).forEach(key=>{
+    if (skip.has(key)) return;
+    const val = data[key];
+    if (val === null || val === undefined || val === '') return;
+
+    if (Array.isArray(val)) {
+      if (val.length === 0) return;
+      if (typeof val[0] === 'object' && val[0] !== null) {
+        const hasNestedArray = val.some(item => Object.values(item).some(v => Array.isArray(v)));
+        if (hasNestedArray) {
+          // e.g. Market Map's sub_segments, each containing a nested players array —
+          // render as repeated mini sub-sections rather than one flat table.
+          val.forEach((item, i) => {
+            const subRows = [];
+            const subLists = [];
+            const label = item.name || item.company || item.acquirer || `${humanizeKey(key)} ${i+1}`;
+            Object.keys(item).forEach(k=>{
+              if (Array.isArray(item[k])) {
+                // Prefix with the parent item's label so headings stay unique across
+                // repeated entries (e.g. "Full-Stack — Players" vs "APM-Focused — Players") —
+                // this also becomes the Excel sheet name, which must be unique per workbook.
+                const uniqueHeading = `${label} — ${humanizeKey(k)}`;
+                if (item[k].length && typeof item[k][0] === 'object') {
+                  subLists.push({ heading: uniqueHeading, items: item[k].map(x => Object.values(x).join(' — ')) });
+                } else {
+                  subLists.push({ heading: uniqueHeading, items: item[k].map(String) });
+                }
+              } else if (item[k] !== undefined && item[k] !== null && item[k] !== '') {
+                subRows.push({ k: humanizeKey(k), v: item[k] });
+              }
+            });
+            sections.push({ type:'kv', heading: label, rows: subRows });
+            subLists.forEach(sl => sections.push({ type:'list', heading: sl.heading, items: sl.items }));
+          });
+        } else {
+          const cols = Object.keys(val[0]);
+          sections.push({
+            type: 'table',
+            heading: humanizeKey(key),
+            columns: cols.map(humanizeKey),
+            rows: val.map(item => cols.map(c => item[c] !== undefined && item[c] !== null ? String(item[c]) : '')),
+          });
+        }
+      } else {
+        sections.push({ type:'list', heading: humanizeKey(key), items: val.map(String) });
+      }
+    } else if (typeof val === 'object') {
+      const rows = Object.keys(val)
+        .filter(k => val[k] !== undefined && val[k] !== null && val[k] !== '')
+        .map(k => ({ k: humanizeKey(k), v: val[k] }));
+      if (rows.length) sections.push({ type:'kv', heading: humanizeKey(key), rows });
+    } else {
+      topLevelRows.push({ k: humanizeKey(key), v: val });
+    }
+  });
+
+  if (topLevelRows.length) sections.unshift({ type:'kv', heading:'Details', rows: topLevelRows });
+  return sections;
+}
+
+const EXPORT_DISCLAIMER = 'Outputs on this page are generated by AI using live web research and may contain errors or omissions. Figures should be independently verified before use in any decision-making context.';
+
+function exportToPDF(toolTitle, data){
+  if (typeof window.jspdf === 'undefined') { alert('PDF library failed to load — try refreshing the page and exporting again.'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const marginL = 14;
+  let y = 16;
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(13);
+  doc.text('Abhishek Rajput \u2014 Deal Intelligence Terminal', marginL, y); y += 7;
+  doc.setFont('helvetica','normal'); doc.setFontSize(11);
+  doc.text(toolTitle, marginL, y); y += 6;
+  doc.setFontSize(9); doc.setTextColor(130);
+  doc.text('Downloaded: ' + new Date().toLocaleString(), marginL, y); y += 4;
+  doc.setDrawColor(200); doc.line(marginL, y, 196, y); y += 8;
+  doc.setTextColor(20);
+
+  const sections = dataToSections(data);
+  sections.forEach(sec=>{
+    if (y > 265) { doc.addPage(); y = 16; }
+    doc.setFont('helvetica','bold'); doc.setFontSize(11);
+    doc.text(String(sec.heading), marginL, y); y += 6;
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(30);
+
+    if (sec.type === 'kv') {
+      sec.rows.forEach(r=>{
+        const lines = doc.splitTextToSize(`${r.k}: ${r.v}`, 180);
+        lines.forEach(line=>{ if (y > 280) { doc.addPage(); y = 16; } doc.text(line, marginL, y); y += 5; });
+      });
+      y += 3;
+    } else if (sec.type === 'table') {
+      doc.autoTable({ startY: y, head: [sec.columns], body: sec.rows, styles: { fontSize: 8 }, margin: { left: marginL, right: 14 } });
+      y = doc.lastAutoTable.finalY + 8;
+    } else if (sec.type === 'list') {
+      sec.items.forEach(item=>{
+        const lines = doc.splitTextToSize('\u2022 ' + item, 178);
+        lines.forEach(line=>{ if (y > 280) { doc.addPage(); y = 16; } doc.text(line, marginL, y); y += 5; });
+      });
+      y += 3;
+    }
+  });
+
+  if (y > 255) { doc.addPage(); y = 16; }
+  doc.setDrawColor(220); doc.line(marginL, y, 196, y); y += 6;
+  doc.setFontSize(7.5); doc.setTextColor(140);
+  const discLines = doc.splitTextToSize(EXPORT_DISCLAIMER, 180);
+  discLines.forEach(line=>{ doc.text(line, marginL, y); y += 4; });
+
+  doc.save(sanitizeFilename(toolTitle) + '.pdf');
+}
+
+function exportToWord(toolTitle, data){
+  const sections = dataToSections(data);
+  const F = "font-family:Calibri,Arial,sans-serif;";
+  let body = `<h1 style="${F}font-size:20px;margin-bottom:2px;">Abhishek Rajput &mdash; Deal Intelligence Terminal</h1>
+    <h2 style="${F}font-size:15px;color:#555;margin-top:2px;">${escapeHtml(toolTitle)}</h2>
+    <p style="${F}font-size:11px;color:#888;">Downloaded: ${escapeHtml(new Date().toLocaleString())}</p><hr/>`;
+
+  sections.forEach(sec=>{
+    body += `<h3 style="${F}font-size:14px;margin-top:20px;margin-bottom:6px;">${escapeHtml(sec.heading)}</h3>`;
+    if (sec.type === 'kv') {
+      body += `<table style="width:100%;border-collapse:collapse;${F}font-size:11px;">`;
+      sec.rows.forEach(r=> body += `<tr><td style="padding:4px;border-bottom:1px solid #ddd;color:#555;width:220px;vertical-align:top;">${escapeHtml(r.k)}</td><td style="padding:4px;border-bottom:1px solid #ddd;">${escapeHtml(String(r.v))}</td></tr>`);
+      body += `</table>`;
+    } else if (sec.type === 'table') {
+      body += `<table style="width:100%;border-collapse:collapse;${F}font-size:11px;"><tr>` +
+        sec.columns.map(c=>`<th style="text-align:left;padding:4px;border-bottom:2px solid #333;">${escapeHtml(c)}</th>`).join('') + `</tr>`;
+      sec.rows.forEach(row=> body += `<tr>` + row.map(cell=>`<td style="padding:4px;border-bottom:1px solid #ddd;vertical-align:top;">${escapeHtml(cell)}</td>`).join('') + `</tr>`);
+      body += `</table>`;
+    } else if (sec.type === 'list') {
+      body += `<ul style="${F}font-size:11px;">` + sec.items.map(i=>`<li style="margin-bottom:3px;">${escapeHtml(i)}</li>`).join('') + `</ul>`;
+    }
+  });
+
+  body += `<hr/><p style="${F}font-size:9px;color:#999;">${escapeHtml(EXPORT_DISCLAIMER)}</p>`;
+
+  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+    <head><meta charset="utf-8"><title>${escapeHtml(toolTitle)}</title></head><body>${body}</body></html>`;
+  const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+  downloadBlob(blob, sanitizeFilename(toolTitle) + '.doc');
+}
+
+function exportToExcel(toolTitle, data){
+  if (typeof XLSX === 'undefined') { alert('Excel library failed to load — try refreshing the page and exporting again.'); return; }
+  const sections = dataToSections(data);
+  const wb = XLSX.utils.book_new();
+  const usedNames = new Set(['Summary']);
+  // Defensive dedup: Excel sheet names must be unique within a workbook. Even
+  // with unique headings upstream, truncating to 28 chars could theoretically
+  // still collide — this guarantees a valid, unique name no matter what.
+  function uniqueSheetName(base){
+    let name = (base || 'Sheet').slice(0, 28).replace(/[\[\]\*\/\\\?:]/g,'') || 'Sheet';
+    let candidate = name;
+    let n = 2;
+    while (usedNames.has(candidate)) {
+      const suffix = ' (' + n + ')';
+      candidate = name.slice(0, 31 - suffix.length) + suffix;
+      n++;
+    }
+    usedNames.add(candidate);
+    return candidate;
+  }
+
+  const summaryRows = [
+    ['Abhishek Rajput — Deal Intelligence Terminal'],
+    [toolTitle],
+    ['Downloaded: ' + new Date().toLocaleString()],
+    [],
+  ];
+  sections.filter(s=>s.type==='kv').forEach(sec=>{
+    summaryRows.push([sec.heading]);
+    sec.rows.forEach(r=> summaryRows.push([r.k, String(r.v)]));
+    summaryRows.push([]);
+  });
+  summaryRows.push([EXPORT_DISCLAIMER]);
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryRows), 'Summary');
+
+  sections.filter(s=>s.type==='table').forEach(sec=>{
+    const rows = [sec.columns, ...sec.rows];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), uniqueSheetName(sec.heading));
+  });
+  sections.filter(s=>s.type==='list').forEach(sec=>{
+    const rows = [[sec.heading], ...sec.items.map(it=>[it])];
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), uniqueSheetName(sec.heading));
+  });
+
+  XLSX.writeFile(wb, sanitizeFilename(toolTitle) + '.xlsx');
+}
+
+function renderExportBar(containerId, toolTitle, data){
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const bar = document.createElement('div');
+  bar.className = 'export-bar';
+  bar.innerHTML = `<span class="export-label">EXPORT:</span>
+    <button class="export-btn" data-fmt="pdf" type="button">PDF</button>
+    <button class="export-btn" data-fmt="word" type="button">Word</button>
+    <button class="export-btn" data-fmt="excel" type="button">Excel</button>`;
+  bar.querySelectorAll('.export-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      try {
+        const fmt = btn.dataset.fmt;
+        if (fmt === 'pdf') exportToPDF(toolTitle, data);
+        else if (fmt === 'word') exportToWord(toolTitle, data);
+        else if (fmt === 'excel') exportToExcel(toolTitle, data);
+      } catch(e) {
+        alert('Export failed: ' + e.message);
+      }
+    });
+  });
+  container.appendChild(bar);
+}
+
+let __verifyCounter = 0;
+function renderVerificationBadge(containerId, verification){
+  if (!verification) return;
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const id = 'vp' + (__verifyCounter++);
+  const sources = (verification.sources_checked || []).map(s=>`<span class="vp-source-pill">${escapeHtml(s)}</span>`).join('');
+  const html = `
+    <div class="verify-badge">
+      <span class="verify-toggle" id="toggle-${id}">Verified against live sources</span>
+      <div class="verify-panel" id="panel-${id}">
+        <div class="vp-label">Sources checked</div>
+        <div class="vp-sources">${sources || '<span class="vp-source-pill">General web search</span>'}</div>
+        <div class="vp-label">Confidence</div>
+        <div class="vp-note">${escapeHtml(verification.confidence_summary || '')}</div>
+      </div>
+    </div>`;
+  container.insertAdjacentHTML('beforeend', html);
+  document.getElementById('toggle-' + id).addEventListener('click', ()=>{
+    document.getElementById('panel-' + id).classList.toggle('open');
+  });
+}
+
+// ============================================================================
+// Global Corporate Pulse — auto-loads on page view, no user input needed
+// ============================================================================
+async function loadGlobalPulse(){
+  const statusEl = document.getElementById('pulseStatus');
+  if (!API_BASE) { statusEl.textContent = 'Backend not connected.'; return; }
+  try {
+    const res = await fetch(API_BASE, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'global-pulse', payload:{} }) });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    renderGlobalPulse(data);
+    statusEl.textContent = data._served_from_cache ? 'Updated periodically' : 'Live';
+  } catch(e) {
+    statusEl.textContent = 'Unavailable right now';
+  }
+}
+function renderGlobalPulse(data){
+  const regions = data.regions || [];
+  const html = regions.map(r=>{
+    const items = (r.developments || []).map(d=>`
+      <div class="pulse-item"><span class="co">${escapeHtml(d.company||'')}</span> — ${escapeHtml(d.headline||'')}<br><span class="meta">${escapeHtml(d.date||'')} · ${escapeHtml(d.category||'')}</span></div>`).join('');
+    return `<div class="pulse-region"><h6>${escapeHtml(r.region||'')}</h6>${items || '<div class="pulse-item">No items.</div>'}</div>`;
+  }).join('');
+  document.getElementById('pulseResults').innerHTML = html || '<div class="pulse-item">No data available.</div>';
+}
+loadGlobalPulse();
+
+// ============================================================================
+// Tool: Quality of Earnings
+// ============================================================================
+async function runQoE(){
+  const company = document.getElementById('qoeCompany').value;
+  const btn = document.getElementById('qoeRunBtn');
+  const data = await callBackend('qoe', {company}, 'qoeStatus', btn);
+  if (!data) return;
+  renderQoEResults(data);
+}
+function renderQoEResults(d){
+  const adjRows = (d.adjustments||[]).map(a=>`<tr><td>${escapeHtml(a.item||'')}</td><td>${escapeHtml(a.amount||'')}</td><td>${escapeHtml(a.rationale||'')}</td></tr>`).join('');
+  const flags = (d.quality_flags||[]).map(f=>`<li><span class="pill ${(f.severity||'').toLowerCase()}">${escapeHtml(f.severity||'')}</span> ${escapeHtml(f.finding||'')}</li>`).join('');
+  document.getElementById('qoeResults').innerHTML = `
+    <div style="background:var(--white);border:1px solid #ddd9c5;padding:20px;">
+      <h4 style="margin:0 0 4px;font-family:'Space Grotesk',sans-serif;">${escapeHtml(d.company)}</h4>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8a8672;margin-bottom:12px;">Period analyzed: ${escapeHtml(d.period_analyzed||'—')} ${d.period_reported_date ? '· Reported '+escapeHtml(d.period_reported_date) : ''}</div>
+      <div class="profile-grid" style="margin-top:0;">
+        <div class="profile-card"><h5>Reported vs. Adjusted EBITDA</h5>
+          <div class="row"><span>Reported EBITDA</span><span>${escapeHtml(d.reported_ebitda||'—')}</span></div>
+          <div class="row"><span>Adjusted EBITDA</span><span>${escapeHtml(d.adjusted_ebitda||d.reported_ebitda||'—')}</span></div>
+        </div>
+        <div class="profile-card"><h5>Overall Assessment</h5>
+          <p style="font-size:13px;line-height:1.6;margin:0;">${escapeHtml(d.overall_assessment||'')}</p>
+        </div>
+      </div>
+    </div>
+    <h5 style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-transform:uppercase;color:#6b6852;margin:22px 0 6px;">Normalization adjustments</h5>
+    <table class="comps-table"><thead><tr><th>Item</th><th>Amount</th><th>Rationale</th></tr></thead><tbody>${adjRows || '<tr><td colspan="3">No material adjustments identified.</td></tr>'}</tbody></table>
+    <h5 style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-transform:uppercase;color:#6b6852;margin:22px 0 6px;">Quality flags</h5>
+    <ul class="fpa-risks">${flags || '<li>No quality concerns flagged.</li>'}</ul>`;
+  renderVerificationBadge('qoeResults', d.verification);
+  renderExportBar('qoeResults', 'Quality of Earnings - ' + (d.company||''), d);
+}
+
+// ============================================================================
+// Tool: Business Case Builder
+// ============================================================================
+async function runBusinessCase(){
+  const company = document.getElementById('bcbCompany').value;
+  const btn = document.getElementById('bcbRunBtn');
+  const data = await callBackend('business-case', {company}, 'bcbStatus', btn);
+  if (!data) return;
+  renderBusinessCaseResults(data);
+}
+function renderBusinessCaseResults(d){
+  const swot = d.swot || {};
+  const swotBlock = (label, items) => `<div class="profile-card"><h5>${label}</h5><ul class="fpa-risks">${(items||[]).map(i=>`<li>${escapeHtml(i)}</li>`).join('') || '<li>None identified.</li>'}</ul></div>`;
+  const options = (d.strategic_options||[]).map(o=>`<div class="fpa-month"><div class="m">${escapeHtml(o.option||'')}</div>${escapeHtml(o.description||'')}</div>`).join('');
+  const risks = (d.key_risks||[]).map(r=>`<li>${escapeHtml(r)}</li>`).join('');
+  document.getElementById('bcbResults').innerHTML = `
+    <div style="background:var(--white);border:1px solid #ddd9c5;padding:20px;">
+      <h4 style="margin:0 0 6px;font-family:'Space Grotesk',sans-serif;">${escapeHtml(d.company)}</h4>
+      <p style="font-size:13.5px;line-height:1.6;margin:0 0 10px;">${escapeHtml(d.executive_summary||'')}</p>
+      <p style="font-size:12.5px;line-height:1.5;color:#6b6852;margin:0;">${escapeHtml(d.market_context||'')}</p>
+    </div>
+    <h5 style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-transform:uppercase;color:#6b6852;margin:22px 0 6px;">SWOT</h5>
+    <div class="profile-grid" style="margin-top:0;">
+      ${swotBlock('Strengths', swot.strengths)}
+      ${swotBlock('Weaknesses', swot.weaknesses)}
+      ${swotBlock('Opportunities', swot.opportunities)}
+      ${swotBlock('Threats', swot.threats)}
+    </div>
+    <h5 style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-transform:uppercase;color:#6b6852;margin:22px 0 6px;">Strategic options</h5>
+    ${options || '<p>No options returned.</p>'}
+    <div style="background:var(--white);border:1px solid #ddd9c5;padding:16px 20px;margin-top:16px;">
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;color:#6b6852;margin-bottom:6px;">Recommended path</div>
+      <p style="font-size:13.5px;line-height:1.6;margin:0;">${escapeHtml(d.recommended_path||'')}</p>
+    </div>
+    <h5 style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-transform:uppercase;color:#6b6852;margin:22px 0 6px;">Key risks</h5>
+    <ul class="fpa-risks">${risks || '<li>None identified.</li>'}</ul>`;
+  renderVerificationBadge('bcbResults', d.verification);
+  renderExportBar('bcbResults', 'Business Case - ' + (d.company||''), d);
+}
+
+// ============================================================================
+// Tool: Stakeholder & Relationship Mapper
+// ============================================================================
+async function runStakeholderMap(){
+  const company = document.getElementById('stkCompany').value;
+  const btn = document.getElementById('stkRunBtn');
+  const data = await callBackend('stakeholder-map', {company}, 'stkStatus', btn);
+  if (!data) return;
+  renderStakeholderMapResults(data);
+}
+function renderStakeholderMapResults(d){
+  const cards = (d.stakeholders||[]).map(s=>`
+    <div class="profile-card">
+      <h5>${escapeHtml(s.title||'')}</h5>
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;margin-bottom:4px;">${escapeHtml(s.name||'')}</div>
+      <div style="font-size:12px;color:#6b6852;margin-bottom:8px;">${escapeHtml(s.background||'')}</div>
+      <div style="font-size:12.5px;line-height:1.5;">${escapeHtml(s.engagement_note||'')}</div>
+    </div>`).join('');
+  document.getElementById('stkResults').innerHTML = `
+    <div style="background:var(--white);border:1px solid #ddd9c5;padding:16px 20px;margin-bottom:16px;">
+      <p style="font-size:13px;line-height:1.6;margin:0;">${escapeHtml(d.relationship_summary||'')}</p>
+    </div>
+    <div class="profile-grid" style="margin-top:0;">${cards || '<p>No stakeholders returned.</p>'}</div>`;
+  renderVerificationBadge('stkResults', d.verification);
+  renderExportBar('stkResults', 'Stakeholder Map - ' + (d.company||''), d);
 }
 </script>
 </body>
