@@ -169,7 +169,7 @@
   .disclaimer-bar{ padding:16px 5vw; border-top:1px solid var(--ink-line); }
   .disclaimer-bar p{ margin:0; font-family:'IBM Plex Mono',monospace; font-size:10.5px; line-height:1.6; color:var(--ink-muted-2); max-width:90ch; }
 
-  /* ---------- Verification badge ---------- */
+  /* Verification badge */
   .verify-badge{ margin-top:18px; }
   .verify-toggle{ display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#2E7D4F; background:#e4f2e9; border:1px solid #b9ddc6; padding:5px 12px; border-radius:20px; cursor:pointer; user-select:none; }
   .verify-toggle:before{ content:"✓"; font-weight:700; }
@@ -180,7 +180,7 @@
   .verify-panel .vp-source-pill{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; background:#f0eee5; padding:3px 9px; border-radius:12px; color:#5b584a; }
   .verify-panel .vp-note{ color:#3a3a30; line-height:1.5; }
 
-  /* ---------- Export bar ---------- */
+  /* Export bar */
   .export-bar{ display:flex; gap:8px; margin-top:18px; align-items:center; }
   .export-label{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:#8a8672; margin-right:2px; }
   .export-btn{ display:inline-flex; align-items:center; gap:5px; font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--white); border:1px solid #cfccb9; color:#3a3a30; padding:6px 12px; border-radius:3px; cursor:pointer; transition:all .15s ease; }
@@ -222,12 +222,12 @@
   <div class="hero-left">
     <div class="eyebrow">DEAL INTELLIGENCE TERMINAL</div>
     <h1>A working demonstration of AI-augmented financial, deal, and business research.</h1>
-    <p>Each tool below runs live, combining real-time web research with structured analysis to produce decision-ready output — the kind of research summary that would otherwise take an analyst hours to pull together by hand.</p>
+    <p>Select a module above to load the active tool on the right. Each capability runs live, combining real-time web research with structured analysis to produce decision-ready output — the kind of research summary that would otherwise take an analyst hours to pull together by hand.</p>
   </div>
   <div class="hero-right" id="activeToolPanel"></div>
 </section>
 
-<!-- TOOL RESULTS: rendered directly below the hero+tool section, before Pulse -->
+<!-- TOOL RESULTS -->
 <div class="tool-results-area">
   <div class="tool-result-block active" id="resblock-orig"><div class="panel result-panel"><div id="origResults"></div></div></div>
   <div class="tool-result-block" id="resblock-profile"><div class="panel result-panel"><div id="profileResults"></div></div></div>
@@ -287,7 +287,7 @@
   <div class="panel live-wrap">
     <div class="setup-notice" id="profileSetupNotice">⚠ Backend not connected yet. Set <code>API_BASE</code> at the top of this file's script to your deployed Cloudflare Worker URL.</div>
     <div class="live-controls">
-      <input type="text" id="profileCompany" placeholder="Type a real company name, e.g. 'Datadog'" value="Datadog">
+      <input type="text" id="profileCompany" placeholder="Type a real company name, e.g. 'Apple'" value="Apple">
       <button id="profileRunBtn" onclick="runCompanyProfile()">BUILD PROFILE</button>
     </div>
     <div class="live-status" id="profileStatus"></div>
@@ -431,13 +431,10 @@
 
 <script>
 // ============================================================================
-// SET THIS to your deployed Cloudflare Worker URL, e.g.
-// const API_BASE = "https://deal-terminal-backend.abhi-srcc.workers.dev";
+// SET THIS to your deployed Cloudflare Worker URL
 // ============================================================================
 const API_BASE = "https://deal-terminal-backend.abhi-srcc.workers.dev";
 
-// ---------- Nav: injects the selected tool's controls into the top-right panel,
-// and shows only that tool's results block further down the page ----------
 function activateTool(toolKey){
   const tpl = document.getElementById('tpl-' + toolKey);
   const panel = document.getElementById('activeToolPanel');
@@ -459,17 +456,14 @@ document.getElementById('navEl').addEventListener('click', (e)=>{
   activateTool(btn.dataset.tool);
 });
 
-// ---------- Setup notices: check on every tool activation, not just once ----------
 function updateSetupNotices(){
   document.querySelectorAll('.setup-notice').forEach(el=>{
     el.style.display = API_BASE ? 'none' : 'block';
   });
 }
 
-// Load the default tool's controls into the top panel on page load
 activateTool('orig');
 
-// ---------- Ticker: live market indices ----------
 async function loadTicker(){
   const fallback = ["S&P 500 —","NASDAQ —","DOW —","NIFTY 50 —","FTSE 100 —"];
   let items = fallback;
@@ -490,7 +484,6 @@ async function loadTicker(){
 }
 loadTicker();
 
-// ---------- Shared backend caller ----------
 async function callBackend(action, payload, statusElId, btnEl){
   const statusEl = document.getElementById(statusElId);
   if(!API_BASE){
@@ -516,7 +509,7 @@ async function callBackend(action, payload, statusElId, btnEl){
   }
 }
 
-// ---------- Tool: Origination ----------
+// Tool: Origination
 async function runOrigination(){
   const region = document.getElementById('origRegion').value;
   const industry = document.getElementById('origIndustry').value;
@@ -537,17 +530,17 @@ function renderOriginationResults(data){
 
   const rows = opps.map(o=>`
     <tr>
-      <td><b>${o.company}</b></td>
-      <td>${o.deal_type}</td>
-      <td>${o.time_horizon}</td>
-      <td><span class="pill ${o.confidence.toLowerCase()}">${o.confidence}</span></td>
-      <td>${o.rationale}</td>
+      <td><b>${escapeHtml(o.company)}</b></td>
+      <td>${escapeHtml(o.deal_type)}</td>
+      <td>${escapeHtml(o.time_horizon)}</td>
+      <td><span class="pill ${(o.confidence||'').toLowerCase()}">${escapeHtml(o.confidence)}</span></td>
+      <td>${escapeHtml(o.rationale)}</td>
     </tr>`).join('');
 
   document.getElementById('origResults').innerHTML = `
     <div class="orig-grid">
       <div class="orig-panel">
-        <h5>Opportunities — ${data.industry} · ${data.region} (${opps.length} found)</h5>
+        <h5>Opportunities — ${escapeHtml(data.industry)} · ${escapeHtml(data.region)} (${opps.length} found)</h5>
         <table class="opp-table">
           <thead><tr><th>Company</th><th>Type</th><th>Horizon</th><th>Confidence</th><th>Rationale</th></tr></thead>
           <tbody>${rows || '<tr><td colspan="5">No fully-named opportunities surfaced this run — try again or pick a different combination.</td></tr>'}</tbody>
@@ -566,7 +559,7 @@ function renderOriginationResults(data){
 
   try{
     if(typeof Chart === 'undefined'){
-      document.getElementById('origResults').insertAdjacentHTML('beforeend', '<p style="font-family:\'IBM Plex Mono\',monospace;font-size:11.5px;color:#B4433D;margin-top:12px;">Chart library failed to load (network or ad-blocker may be blocking it) — table above is still accurate.</p>');
+      document.getElementById('origResults').insertAdjacentHTML('beforeend', '<p style="font-family:\'IBM Plex Mono\',monospace;font-size:11.5px;color:#B4433D;margin-top:12px;">Chart library failed to load — table above is still accurate.</p>');
       return;
     }
     new Chart(document.getElementById('origTypeChart').getContext('2d'), {
@@ -582,7 +575,7 @@ function renderOriginationResults(data){
   }catch(e){ console.error('Chart render failed:', e); }
 }
 
-// ---------- Tool: Company Profile ----------
+// Tool: Company Profile
 async function runCompanyProfile(){
   const company = document.getElementById('profileCompany').value;
   const btn = document.getElementById('profileRunBtn');
@@ -592,32 +585,32 @@ async function runCompanyProfile(){
 }
 
 function renderProfileResults(d){
-  const mgmt = safeArray(d.key_management).map(m=>`<div class="row"><span>${m.title}</span><span>${m.name}</span></div>`).join('');
-  const news = safeArray(d.recent_news).map(n=>`<div class="news-item"><span class="d">${n.date}</span><br>${n.headline}</div>`).join('');
+  const mgmt = safeArray(d.key_management).map(m=>`<div class="row"><span>${escapeHtml(m.title)}</span><span>${escapeHtml(m.name)}</span></div>`).join('');
+  const news = safeArray(d.recent_news).map(n=>`<div class="news-item"><span class="d">${escapeHtml(n.date)}</span><br>${escapeHtml(n.headline)}</div>`).join('');
   const inc = d.income_statement_highlights || {};
   const bs = d.balance_sheet_highlights || {};
 
   document.getElementById('profileResults').innerHTML = `
     <div style="background:var(--white);border:1px solid #ddd9c5;padding:20px;">
-      <h4 style="margin:0 0 6px;font-family:'Space Grotesk',sans-serif;">${d.company} <span style="font-size:11px;color:#8a8672;font-family:'IBM Plex Mono',monospace;">${d.public_status||''} ${d.ticker?('· '+d.ticker):''}</span></h4>
-      <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:#8a8672;margin-bottom:10px;">${d.sector||''} · HQ: ${d.headquarters||'—'} · Founded: ${d.founded||'—'}</div>
-      <p style="font-size:13.5px;line-height:1.6;margin:0;">${d.overview||''}</p>
+      <h4 style="margin:0 0 6px;font-family:'Space Grotesk',sans-serif;">${escapeHtml(d.company)} <span style="font-size:11px;color:#8a8672;font-family:'IBM Plex Mono',monospace;">${escapeHtml(d.public_status||'')} ${d.ticker?('· '+escapeHtml(d.ticker)):''}</span></h4>
+      <div style="font-size:11px;font-family:'IBM Plex Mono',monospace;color:#8a8672;margin-bottom:10px;">${escapeHtml(d.sector||'')} · HQ: ${escapeHtml(d.headquarters||'—')} · Founded: ${escapeHtml(d.founded||'—')}</div>
+      <p style="font-size:13.5px;line-height:1.6;margin:0;">${escapeHtml(d.overview||'')}</p>
     </div>
     <div class="profile-grid">
       <div class="profile-card">
         <h5>Income statement highlights</h5>
-        <div class="row"><span>Revenue</span><span>${inc.revenue||'—'}</span></div>
-        <div class="row"><span>Revenue growth YoY</span><span>${inc.revenue_growth_yoy||'—'}</span></div>
-        <div class="row"><span>EBITDA</span><span>${inc.ebitda||'—'}</span></div>
-        <div class="row"><span>EBITDA margin</span><span>${inc.ebitda_margin||'—'}</span></div>
-        <div class="row"><span>Net income</span><span>${inc.net_income||'—'}</span></div>
+        <div class="row"><span>Revenue</span><span>${escapeHtml(inc.revenue||'—')}</span></div>
+        <div class="row"><span>Revenue growth YoY</span><span>${escapeHtml(inc.revenue_growth_yoy||'—')}</span></div>
+        <div class="row"><span>EBITDA</span><span>${escapeHtml(inc.ebitda||'—')}</span></div>
+        <div class="row"><span>EBITDA margin</span><span>${escapeHtml(inc.ebitda_margin||'—')}</span></div>
+        <div class="row"><span>Net income</span><span>${escapeHtml(inc.net_income||'—')}</span></div>
       </div>
       <div class="profile-card">
         <h5>Balance sheet highlights</h5>
-        <div class="row"><span>Total assets</span><span>${bs.total_assets||'—'}</span></div>
-        <div class="row"><span>Total debt</span><span>${bs.total_debt||'—'}</span></div>
-        <div class="row"><span>Cash</span><span>${bs.cash||'—'}</span></div>
-        <div class="row"><span>Net debt / EBITDA</span><span>${bs.net_debt_ebitda||'—'}</span></div>
+        <div class="row"><span>Total assets</span><span>${escapeHtml(bs.total_assets||'—')}</span></div>
+        <div class="row"><span>Total debt</span><span>${escapeHtml(bs.total_debt||'—')}</span></div>
+        <div class="row"><span>Cash</span><span>${escapeHtml(bs.cash||'—')}</span></div>
+        <div class="row"><span>Net debt / EBITDA</span><span>${escapeHtml(bs.net_debt_ebitda||'—')}</span></div>
       </div>
       <div class="profile-card"><h5>Key management</h5>${mgmt || '<div class="row"><span>—</span><span></span></div>'}</div>
       <div class="profile-card"><h5>Recent news</h5>${news || '<div class="news-item">No recent items found.</div>'}</div>
@@ -626,7 +619,7 @@ function renderProfileResults(d){
   renderExportBar('profileResults', 'Company Profile - ' + (d.company||''), d);
 }
 
-// ---------- Tool: Comps ----------
+// Tool: Comps
 async function runComps(){
   const company = document.getElementById('compsCompany').value;
   const btn = document.getElementById('compsRunBtn');
@@ -639,27 +632,27 @@ function renderCompsResults(d){
   const peers = safeArray(d.peers);
   const rows = peers.map(p=>`
     <tr>
-      <td><b>${p.company}</b></td>
-      <td>${p.ticker||'—'}</td>
-      <td>${p.ev_revenue||'—'}</td>
-      <td>${p.ev_ebitda||'—'}</td>
-      <td>${p.pe||'—'}</td>
+      <td><b>${escapeHtml(p.company)}</b></td>
+      <td>${escapeHtml(p.ticker||'—')}</td>
+      <td>${escapeHtml(p.ev_revenue||'—')}</td>
+      <td>${escapeHtml(p.ev_ebitda||'—')}</td>
+      <td>${escapeHtml(p.pe||'—')}</td>
     </tr>`).join('');
 
   document.getElementById('compsResults').innerHTML = `
     <table class="comps-table">
       <thead><tr><th>Company</th><th>Ticker</th><th>EV/Revenue</th><th>EV/EBITDA</th><th>P/E</th></tr></thead>
       <tbody>
-        <tr class="target-row"><td colspan="5">Target: ${d.target}</td></tr>
+        <tr class="target-row"><td colspan="5">Target: ${escapeHtml(d.target)}</td></tr>
         ${rows || '<tr><td colspan="5">No comparable set returned — try again.</td></tr>'}
       </tbody>
     </table>
-    <div class="comps-note">As of ${d.as_of || 'recent'} · ${d.note || ''}</div>`;
+    <div class="comps-note">As of ${escapeHtml(d.as_of || 'recent')} · ${escapeHtml(d.note || '')}</div>`;
   renderVerificationBadge('compsResults', d.verification);
   renderExportBar('compsResults', 'Trading Comps - ' + (d.target||''), d);
 }
 
-// ---------- Tool: Market Map ----------
+// Tool: Market Map
 async function runMarketMap(){
   const sector = document.getElementById('mmSector').value;
   const btn = document.getElementById('mmRunBtn');
@@ -671,23 +664,21 @@ async function runMarketMap(){
 function renderMarketMapResults(d){
   const segments = safeArray(d.sub_segments);
   const html = segments.map(seg=>{
-    const players = safeArray(seg.players).map(p=>`<span class="mm-player ${(p.position||'').toLowerCase()}">${p.name}</span>`).join('');
-    return `<div class="mm-segment"><h5>${seg.name}</h5><p>${seg.description||''}</p><div class="mm-players">${players}</div></div>`;
+    const players = safeArray(seg.players).map(p=>`<span class="mm-player ${(p.position||'').toLowerCase()}">${escapeHtml(p.name)}</span>`).join('');
+    return `<div class="mm-segment"><h5>${escapeHtml(seg.name)}</h5><p>${escapeHtml(seg.description||'')}</p><div class="mm-players">${players}</div></div>`;
   }).join('');
-  document.getElementById('mmResults').innerHTML = `<div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#8a8672;margin-bottom:4px;">${d.sector}</div>` + (html || '<p>No market map returned — try again.</p>');
+  document.getElementById('mmResults').innerHTML = `<div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#8a8672;margin-bottom:4px;">${escapeHtml(d.sector)}</div>` + (html || '<p>No market map returned — try again.</p>');
   renderVerificationBadge('mmResults', d.verification);
   renderExportBar('mmResults', 'Market Map - ' + (d.sector||''), d);
 }
 
-// ---------- Tool: FP&A Analysis ----------
-// Using event delegation since #fpaFile only exists in the DOM after its
-// template is cloned into the active tool panel (not present at page load).
+// Tool: FP&A Analysis
 document.getElementById('activeToolPanel').addEventListener('change', (e)=>{
   if (e.target && e.target.id === 'fpaFile') {
     const f = e.target.files[0];
     const statusEl = document.getElementById('fpaStatus');
     if (f && statusEl) {
-      statusEl.innerHTML = `Selected: <b>${f.name}</b> — click Analyze.`;
+      statusEl.innerHTML = `Selected: <b>${escapeHtml(f.name)}</b> — click Analyze.`;
       statusEl.className = 'live-status';
     }
   }
@@ -700,7 +691,7 @@ function fileToCsvText(file){
     reader.onload = (e)=>{
       try{
         if(isExcel){
-          if(typeof XLSX === 'undefined'){ reject(new Error('Excel parser failed to load — try a .csv file instead, or reload the page.')); return; }
+          if(typeof XLSX === 'undefined'){ reject(new Error('Excel parser failed to load — try a .csv file instead.')); return; }
           const wb = XLSX.read(e.target.result, {type:'binary'});
           const sheet = wb.Sheets[wb.SheetNames[0]];
           resolve(XLSX.utils.sheet_to_csv(sheet));
@@ -738,9 +729,9 @@ async function runFPA(){
 }
 
 function renderFPAResults(d){
-  const commentary = safeArray(d.variance_commentary).map(c=>`<div class="fpa-month"><div class="m">${c.month}</div>${c.commentary}</div>`).join('');
-  const forecastRows = safeArray(d.forecast_next_3_months).map(f=>`<tr><td>${f.month}</td><td>${f.revenue}</td><td>${f.ebitda}</td></tr>`).join('');
-  const risks = safeArray(d.key_risks).map(r=>`<li>${r}</li>`).join('');
+  const commentary = safeArray(d.variance_commentary).map(c=>`<div class="fpa-month"><div class="m">${escapeHtml(c.month)}</div>${escapeHtml(c.commentary)}</div>`).join('');
+  const forecastRows = safeArray(d.forecast_next_3_months).map(f=>`<tr><td>${escapeHtml(f.month)}</td><td>${escapeHtml(f.revenue)}</td><td>${escapeHtml(f.ebitda)}</td></tr>`).join('');
+  const risks = safeArray(d.key_risks).map(r=>`<li>${escapeHtml(r)}</li>`).join('');
   document.getElementById('fpaResults').innerHTML = `
     <h5 style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-transform:uppercase;color:#6b6852;margin:22px 0 6px;">Variance commentary</h5>
     ${commentary || '<p>No commentary returned.</p>'}
@@ -751,7 +742,7 @@ function renderFPAResults(d){
   renderExportBar('fpaResults', 'FPA Variance Analysis', d);
 }
 
-// ---------- Tool: M&A Monitor ----------
+// Tool: M&A Monitor
 async function runMAMonitor(){
   const region = document.getElementById('mamRegion').value;
   const industry = document.getElementById('mamIndustry').value;
@@ -765,15 +756,15 @@ function renderMAMonitorResults(d){
   const deals = safeArray(d.deals);
   const rows = deals.map(x=>`
     <tr>
-      <td><b>${x.acquirer}</b></td>
-      <td>${x.target}</td>
-      <td>${x.deal_value||'—'}</td>
-      <td>${x.date_announced||'—'}</td>
-      <td>${x.status||'—'}</td>
-      <td>${x.description||''}</td>
+      <td><b>${escapeHtml(x.acquirer)}</b></td>
+      <td>${escapeHtml(x.target)}</td>
+      <td>${escapeHtml(x.deal_value||'—')}</td>
+      <td>${escapeHtml(x.date_announced||'—')}</td>
+      <td>${escapeHtml(x.status||'—')}</td>
+      <td>${escapeHtml(x.description||'')}</td>
     </tr>`).join('');
   document.getElementById('mamResults').innerHTML = `
-    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#8a8672;margin-bottom:4px;">${d.industry} · ${d.region}</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#8a8672;margin-bottom:4px;">${escapeHtml(d.industry)} · ${escapeHtml(d.region)}</div>
     <table class="mam-table">
       <thead><tr><th>Acquirer</th><th>Target</th><th>Deal Value</th><th>Announced</th><th>Status</th><th>Rationale</th></tr></thead>
       <tbody>${rows || '<tr><td colspan="6">No verified recent deals found for this combination — try a different region or industry.</td></tr>'}</tbody>
@@ -782,25 +773,14 @@ function renderMAMonitorResults(d){
   renderExportBar('mamResults', 'M&A Monitor', d);
 }
 
-// ============================================================================
-// SHARED: verification badge + export system (PDF / Word / Excel)
-// ============================================================================
+// Exports
 function escapeHtml(s){
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-// Guards against a non-array value showing up where an array is expected —
-// e.g. .forEach/.map failing because the model returned an object or string
-// for a field the schema declares as an array. Falls back to [] instead of
-// letting a single malformed field crash the whole render.
 function safeArray(x){
   return Array.isArray(x) ? x : [];
 }
 
-// Wraps every render*Results call: if the backend returned data successfully
-// but the rendering itself throws (an unexpected data shape, a null array
-// item, anything), this shows a diagnosable message in the results area
-// instead of silently doing nothing — which is what "Done." with no visible
-// output actually means: a render-time error was thrown and swallowed.
 function safeRender(renderFn, containerId, data){
   try {
     renderFn(data);
@@ -808,7 +788,7 @@ function safeRender(renderFn, containerId, data){
     console.error('Render error in ' + containerId + ':', e);
     const el = document.getElementById(containerId);
     if (el) {
-      el.innerHTML = `<div style="background:#fff0ee;border:1px solid #e0a89e;padding:16px 18px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8a3a2e;line-height:1.6;">⚠ The result came back from the backend successfully, but something went wrong displaying it (${escapeHtml(e.message)}). This is a display bug, not a data failure — try running it again, or switch tabs and back.</div>`;
+      el.innerHTML = `<div style="background:#fff0ee;border:1px solid #e0a89e;padding:16px 18px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8a3a2e;line-height:1.6;">⚠ Display error (${escapeHtml(e.message)}). Try running the query again.</div>`;
     }
   }
 }
@@ -823,20 +803,18 @@ function downloadBlob(blob, filename){
   setTimeout(()=>URL.revokeObjectURL(url), 1500);
 }
 function humanizeKey(key){
-  return key.replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
+  return String(key || '').replace(/<[^>]*>/g, '').replace(/_/g,' ').trim().replace(/\b\w/g, c=>c.toUpperCase());
 }
 
-// Walks any tool's result object into a generic list of exportable sections —
-// this is what lets one export system work across every tool without a
-// bespoke formatter per tool.
 function dataToSections(data){
   const sections = [];
-  const skip = new Set(['verification', '_served_from_cache']);
+  const skip = new Set(['verification', '_served_from_cache', 'note', 'confidence_summary', 'sources_checked', 'generated_at']);
   const topLevelRows = [];
 
-  Object.keys(data || {}).forEach(key=>{
+  Object.keys(data || {}).forEach(rawKey=>{
+    const key = rawKey.replace(/<[^>]*>/g, '').trim();
     if (skip.has(key)) return;
-    const val = data[key];
+    const val = data[rawKey];
     if (val === null || val === undefined || val === '') return;
 
     if (Array.isArray(val)) {
@@ -844,25 +822,21 @@ function dataToSections(data){
       if (typeof val[0] === 'object' && val[0] !== null) {
         const hasNestedArray = val.some(item => Object.values(item).some(v => Array.isArray(v)));
         if (hasNestedArray) {
-          // e.g. Market Map's sub_segments, each containing a nested players array —
-          // render as repeated mini sub-sections rather than one flat table.
           val.forEach((item, i) => {
             const subRows = [];
             const subLists = [];
             const label = item.name || item.company || item.acquirer || `${humanizeKey(key)} ${i+1}`;
             Object.keys(item).forEach(k=>{
+              const cleanK = k.replace(/<[^>]*>/g, '').trim();
               if (Array.isArray(item[k])) {
-                // Prefix with the parent item's label so headings stay unique across
-                // repeated entries (e.g. "Full-Stack — Players" vs "APM-Focused — Players") —
-                // this also becomes the Excel sheet name, which must be unique per workbook.
-                const uniqueHeading = `${label} — ${humanizeKey(k)}`;
+                const uniqueHeading = `${label} — ${humanizeKey(cleanK)}`;
                 if (item[k].length && typeof item[k][0] === 'object') {
                   subLists.push({ heading: uniqueHeading, items: item[k].map(x => Object.values(x).join(' — ')) });
                 } else {
                   subLists.push({ heading: uniqueHeading, items: item[k].map(String) });
                 }
               } else if (item[k] !== undefined && item[k] !== null && item[k] !== '') {
-                subRows.push({ k: humanizeKey(k), v: item[k] });
+                subRows.push({ k: humanizeKey(cleanK), v: String(item[k]) });
               }
             });
             sections.push({ type:'kv', heading: label, rows: subRows });
@@ -883,21 +857,21 @@ function dataToSections(data){
     } else if (typeof val === 'object') {
       const rows = Object.keys(val)
         .filter(k => val[k] !== undefined && val[k] !== null && val[k] !== '')
-        .map(k => ({ k: humanizeKey(k), v: val[k] }));
+        .map(k => ({ k: humanizeKey(k), v: String(val[k]) }));
       if (rows.length) sections.push({ type:'kv', heading: humanizeKey(key), rows });
     } else {
-      topLevelRows.push({ k: humanizeKey(key), v: val });
+      topLevelRows.push({ k: humanizeKey(key), v: String(val) });
     }
   });
 
-  if (topLevelRows.length) sections.unshift({ type:'kv', heading:'Details', rows: topLevelRows });
+  if (topLevelRows.length) sections.unshift({ type:'kv', heading:'Overview Details', rows: topLevelRows });
   return sections;
 }
 
 const EXPORT_DISCLAIMER = 'Outputs on this page are generated by AI using live web research and may contain errors or omissions. Figures should be independently verified before use in any decision-making context.';
 
 function exportToPDF(toolTitle, data){
-  if (typeof window.jspdf === 'undefined') { alert('PDF library failed to load — try refreshing the page and exporting again.'); return; }
+  if (typeof window.jspdf === 'undefined') { alert('PDF library failed to load — refresh and retry.'); return; }
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   const marginL = 14;
@@ -914,7 +888,7 @@ function exportToPDF(toolTitle, data){
 
   const sections = dataToSections(data);
   sections.forEach(sec=>{
-    if (y > 265) { doc.addPage(); y = 16; }
+    if (y > 260) { doc.addPage(); y = 16; }
     doc.setFont('helvetica','bold'); doc.setFontSize(11);
     doc.text(String(sec.heading), marginL, y); y += 6;
     doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(30);
@@ -924,16 +898,23 @@ function exportToPDF(toolTitle, data){
         const lines = doc.splitTextToSize(`${r.k}: ${r.v}`, 180);
         lines.forEach(line=>{ if (y > 280) { doc.addPage(); y = 16; } doc.text(line, marginL, y); y += 5; });
       });
-      y += 3;
+      y += 4;
     } else if (sec.type === 'table') {
-      doc.autoTable({ startY: y, head: [sec.columns], body: sec.rows, styles: { fontSize: 8 }, margin: { left: marginL, right: 14 } });
+      doc.autoTable({
+        startY: y,
+        head: [sec.columns],
+        body: sec.rows,
+        headStyles: { fillColor: [18, 24, 38], textColor: [255, 255, 255], fontStyle: 'bold' },
+        styles: { fontSize: 8, cellPadding: 3 },
+        margin: { left: marginL, right: 14 }
+      });
       y = doc.lastAutoTable.finalY + 8;
     } else if (sec.type === 'list') {
       sec.items.forEach(item=>{
         const lines = doc.splitTextToSize('\u2022 ' + item, 178);
         lines.forEach(line=>{ if (y > 280) { doc.addPage(); y = 16; } doc.text(line, marginL, y); y += 5; });
       });
-      y += 3;
+      y += 4;
     }
   });
 
@@ -957,12 +938,12 @@ function exportToWord(toolTitle, data){
     body += `<h3 style="${F}font-size:14px;margin-top:20px;margin-bottom:6px;">${escapeHtml(sec.heading)}</h3>`;
     if (sec.type === 'kv') {
       body += `<table style="width:100%;border-collapse:collapse;${F}font-size:11px;">`;
-      sec.rows.forEach(r=> body += `<tr><td style="padding:4px;border-bottom:1px solid #ddd;color:#555;width:220px;vertical-align:top;">${escapeHtml(r.k)}</td><td style="padding:4px;border-bottom:1px solid #ddd;">${escapeHtml(String(r.v))}</td></tr>`);
+      sec.rows.forEach(r=> body += `<tr><td style="padding:5px;border-bottom:1px solid #ddd;color:#555;width:220px;vertical-align:top;">${escapeHtml(r.k)}</td><td style="padding:5px;border-bottom:1px solid #ddd;">${escapeHtml(String(r.v))}</td></tr>`);
       body += `</table>`;
     } else if (sec.type === 'table') {
       body += `<table style="width:100%;border-collapse:collapse;${F}font-size:11px;"><tr>` +
-        sec.columns.map(c=>`<th style="text-align:left;padding:4px;border-bottom:2px solid #333;">${escapeHtml(c)}</th>`).join('') + `</tr>`;
-      sec.rows.forEach(row=> body += `<tr>` + row.map(cell=>`<td style="padding:4px;border-bottom:1px solid #ddd;vertical-align:top;">${escapeHtml(cell)}</td>`).join('') + `</tr>`);
+        sec.columns.map(c=>`<th style="text-align:left;padding:6px;background:#121826;color:#ffffff;border:1px solid #333;">${escapeHtml(c)}</th>`).join('') + `</tr>`;
+      sec.rows.forEach(row=> body += `<tr>` + row.map(cell=>`<td style="padding:6px;border:1px solid #ddd;vertical-align:top;">${escapeHtml(cell)}</td>`).join('') + `</tr>`);
       body += `</table>`;
     } else if (sec.type === 'list') {
       body += `<ul style="${F}font-size:11px;">` + sec.items.map(i=>`<li style="margin-bottom:3px;">${escapeHtml(i)}</li>`).join('') + `</ul>`;
@@ -978,13 +959,11 @@ function exportToWord(toolTitle, data){
 }
 
 function exportToExcel(toolTitle, data){
-  if (typeof XLSX === 'undefined') { alert('Excel library failed to load — try refreshing the page and exporting again.'); return; }
+  if (typeof XLSX === 'undefined') { alert('Excel library failed to load — refresh and retry.'); return; }
   const sections = dataToSections(data);
   const wb = XLSX.utils.book_new();
   const usedNames = new Set(['Summary']);
-  // Defensive dedup: Excel sheet names must be unique within a workbook. Even
-  // with unique headings upstream, truncating to 28 chars could theoretically
-  // still collide — this guarantees a valid, unique name no matter what.
+
   function uniqueSheetName(base){
     let name = (base || 'Sheet').slice(0, 28).replace(/[\[\]\*\/\\\?:]/g,'') || 'Sheet';
     let candidate = name;
@@ -1071,9 +1050,7 @@ function renderVerificationBadge(containerId, verification){
   });
 }
 
-// ============================================================================
-// Global Corporate Pulse — auto-loads on page view, no user input needed
-// ============================================================================
+// Global Corporate Pulse
 async function loadGlobalPulse(){
   const statusEl = document.getElementById('pulseStatus');
   if (!API_BASE) { statusEl.textContent = 'Backend not connected.'; return; }
@@ -1098,9 +1075,7 @@ function renderGlobalPulse(data){
 }
 loadGlobalPulse();
 
-// ============================================================================
-// Tool: Quality of Earnings
-// ============================================================================
+// QoE
 async function runQoE(){
   const company = document.getElementById('qoeCompany').value;
   const btn = document.getElementById('qoeRunBtn');
@@ -1133,9 +1108,7 @@ function renderQoEResults(d){
   renderExportBar('qoeResults', 'Quality of Earnings - ' + (d.company||''), d);
 }
 
-// ============================================================================
-// Tool: Business Case Builder
-// ============================================================================
+// Business Case
 async function runBusinessCase(){
   const company = document.getElementById('bcbCompany').value;
   const btn = document.getElementById('bcbRunBtn');
@@ -1173,9 +1146,7 @@ function renderBusinessCaseResults(d){
   renderExportBar('bcbResults', 'Business Case - ' + (d.company||''), d);
 }
 
-// ============================================================================
-// Tool: Stakeholder & Relationship Mapper
-// ============================================================================
+// Stakeholder Map
 async function runStakeholderMap(){
   const company = document.getElementById('stkCompany').value;
   const btn = document.getElementById('stkRunBtn');
