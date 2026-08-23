@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Abhishek Rajput — Deal Intelligence Terminal</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230B0F19'/%3E%3Ctext x='32' y='45' font-family='monospace' font-size='34' font-weight='bold' fill='%23C9A227' text-anchor='middle'%3E%3E_%3C/text%3E%3C/svg%3E">
 <meta name="description" content="Live AI-augmented deal research tools built by Abhishek Rajput — Senior Manager, Deal Research, Delivery & AI-Enabled Analytics.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -60,25 +61,38 @@
   .live-dot{ display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--green); margin-left:7px; box-shadow:0 0 6px var(--green); }
   nav.fkeys button.active .live-dot{ background:#0B0F19; box-shadow:none; }
 
-  .hero{ padding:56px 5vw 44px; border-bottom:1px solid var(--ink-line); display:grid; grid-template-columns:1.3fr 1fr; gap:48px; align-items:start; }
-  .hero .eyebrow{ font-family:'IBM Plex Mono',monospace; color:var(--gold); font-size:12.5px; letter-spacing:0.08em; margin-bottom:16px; }
-  .hero h1{ font-size:clamp(26px,3.2vw,38px); line-height:1.15; font-weight:600; margin:0 0 14px; max-width:34ch; }
-  .hero p{ color:var(--ink-muted); font-size:15.5px; line-height:1.6; max-width:62ch; margin:0; }
+  .hero-integrated{ padding:48px 5vw 32px; border-bottom:1px solid var(--ink-line); display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:start; }
+  .hero-integrated .eyebrow{ font-family:'IBM Plex Mono',monospace; color:var(--gold); font-size:12.5px; letter-spacing:0.08em; margin-bottom:16px; }
+  .hero-integrated h1{ font-size:clamp(24px,2.8vw,34px); line-height:1.15; font-weight:600; margin:0 0 14px; max-width:32ch; }
+  .hero-integrated p{ color:var(--ink-muted); font-size:15px; line-height:1.6; max-width:56ch; margin:0; }
 
-  .hero-right{ background:var(--ink-panel); border:1px solid var(--ink-line); padding:20px; }
-  .pulse-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px; flex-wrap:wrap; gap:6px; }
-  .pulse-title{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:0.06em; color:var(--gold); }
+  .hero-right{ display:flex; flex-direction:column; }
+  .hero-right .tool-head{ margin-bottom:16px; max-width:none; }
+  .hero-right .tool-head .code{ font-family:'IBM Plex Mono',monospace; color:var(--gold); font-size:11.5px; letter-spacing:0.06em; display:block; margin-bottom:6px; }
+  .hero-right .tool-head h2{ font-size:19px; margin:0 0 8px; font-weight:600; }
+  .hero-right .tool-head p{ color:var(--ink-muted); font-size:13px; line-height:1.55; margin:0; max-width:none; }
+  .hero-right .panel.live-wrap{ padding:20px; }
+  .hero-right .live-controls{ margin-bottom:6px; }
+  .hero-right .live-controls select,
+  .hero-right .live-controls input[type=text],
+  .hero-right .live-controls input[type=file]{ min-width:0; flex:1; }
+
+  .pulse-section{ padding:32px 5vw; border-bottom:1px solid var(--ink-line); background:var(--ink-panel); }
+  .pulse-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:16px; flex-wrap:wrap; gap:6px; }
+  .pulse-title{ font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.08em; color:var(--gold); }
   .pulse-sub{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--ink-muted); }
-  .pulse-region{ margin-bottom:14px; }
-  .pulse-region:last-child{ margin-bottom:0; }
-  .pulse-region h6{ margin:0 0 6px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-muted-2); }
-  .pulse-item{ font-size:12.5px; line-height:1.5; padding:6px 0; border-bottom:1px solid var(--ink-line); }
+  .pulse-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+  .pulse-region h6{ margin:0 0 8px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--gold); }
+  .pulse-item{ font-size:12.5px; line-height:1.5; padding:8px 0; border-bottom:1px solid var(--ink-line); }
   .pulse-item:last-child{ border-bottom:none; }
   .pulse-item .co{ font-weight:600; color:var(--white); }
   .pulse-item .meta{ font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--ink-muted); }
 
-  section.tool{ padding:56px 5vw; border-bottom:1px solid var(--ink-line); display:none; }
-  section.tool.active{ display:block; animation:fade .35s ease; }
+  .tool-results-area{ }
+  .tool-result-block{ display:none; padding:32px 5vw 56px; border-bottom:1px solid var(--ink-line); }
+  .tool-result-block.active{ display:block; animation:fade .35s ease; }
+  .tool-result-block .result-panel{ min-height:40px; }
+  .tool-result-block .result-panel:empty{ display:none; }
   @keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
 
   .tool-head{ margin-bottom:32px; max-width:74ch; }
@@ -174,7 +188,8 @@
   .export-btn svg{ width:13px; height:13px; }
 
   @media (max-width:860px){
-    .hero{ grid-template-columns:1fr; }
+    .hero-integrated{ grid-template-columns:1fr; }
+    .pulse-grid{ grid-template-columns:1fr; }
     .orig-grid, .profile-grid{ grid-template-columns:1fr; }
   }
 </style>
@@ -203,23 +218,37 @@
   </nav>
 </header>
 
-<section class="hero">
+<section class="hero-integrated">
   <div class="hero-left">
     <div class="eyebrow">DEAL INTELLIGENCE TERMINAL</div>
     <h1>A working demonstration of AI-augmented financial, deal, and business research.</h1>
     <p>Each tool below runs live, combining real-time web research with structured analysis to produce decision-ready output — the kind of research summary that would otherwise take an analyst hours to pull together by hand.</p>
   </div>
-  <div class="hero-right">
-    <div class="pulse-head">
-      <span class="pulse-title">GLOBAL CORPORATE PULSE</span>
-      <span class="pulse-sub" id="pulseStatus">Loading live developments…</span>
-    </div>
-    <div id="pulseResults"></div>
+  <div class="hero-right" id="activeToolPanel"></div>
+</section>
+
+<section class="pulse-section">
+  <div class="pulse-head">
+    <span class="pulse-title">GLOBAL CORPORATE PULSE</span>
+    <span class="pulse-sub" id="pulseStatus">Loading live developments…</span>
   </div>
+  <div id="pulseResults" class="pulse-grid"></div>
 </section>
 
 <!-- TOOL: ORIGINATION -->
-<section class="tool active" id="tool-orig">
+<div class="tool-results-area">
+  <div class="tool-result-block active" id="resblock-orig"><div class="panel result-panel"><div id="origResults"></div></div></div>
+  <div class="tool-result-block" id="resblock-profile"><div class="panel result-panel"><div id="profileResults"></div></div></div>
+  <div class="tool-result-block" id="resblock-comps"><div class="panel result-panel"><div id="compsResults"></div></div></div>
+  <div class="tool-result-block" id="resblock-mm"><div class="panel result-panel"><div id="mmResults"></div></div></div>
+  <div class="tool-result-block" id="resblock-fpa"><div class="panel result-panel"><div id="fpaResults"></div></div></div>
+  <div class="tool-result-block" id="resblock-mam"><div class="panel result-panel"><div id="mamResults"></div></div></div>
+  <div class="tool-result-block" id="resblock-qoe"><div class="panel result-panel"><div id="qoeResults"></div></div></div>
+  <div class="tool-result-block" id="resblock-bcb"><div class="panel result-panel"><div id="bcbResults"></div></div></div>
+  <div class="tool-result-block" id="resblock-stk"><div class="panel result-panel"><div id="stkResults"></div></div></div>
+</div>
+
+<template id="tpl-orig">
   <div class="tool-head">
     <span class="code">ORIGINATION.EXE — LIVE</span>
     <h2>Deal Origination Scanner</h2>
@@ -246,12 +275,10 @@
       <button id="origRunBtn" onclick="runOrigination()">RUN SCAN</button>
     </div>
     <div class="live-status" id="origStatus"></div>
-    <div id="origResults"></div>
   </div>
-</section>
+</template>
 
-<!-- TOOL: COMPANY PROFILE -->
-<section class="tool" id="tool-profile">
+<template id="tpl-profile">
   <div class="tool-head">
     <span class="code">PROFILE.EXE — LIVE</span>
     <h2>Company Profile Snapshot</h2>
@@ -264,12 +291,10 @@
       <button id="profileRunBtn" onclick="runCompanyProfile()">BUILD PROFILE</button>
     </div>
     <div class="live-status" id="profileStatus"></div>
-    <div id="profileResults"></div>
   </div>
-</section>
+</template>
 
-<!-- TOOL: COMPS -->
-<section class="tool" id="tool-comps">
+<template id="tpl-comps">
   <div class="tool-head">
     <span class="code">COMPS.EXE — LIVE</span>
     <h2>Trading Comparables Screener</h2>
@@ -282,12 +307,10 @@
       <button id="compsRunBtn" onclick="runComps()">BUILD COMPS TABLE</button>
     </div>
     <div class="live-status" id="compsStatus"></div>
-    <div id="compsResults"></div>
   </div>
-</section>
+</template>
 
-<!-- TOOL: MARKET MAP -->
-<section class="tool" id="tool-mm">
+<template id="tpl-mm">
   <div class="tool-head">
     <span class="code">MARKETMAP.EXE — LIVE</span>
     <h2>Market Mapping Generator</h2>
@@ -300,12 +323,10 @@
       <button id="mmRunBtn" onclick="runMarketMap()">BUILD MARKET MAP</button>
     </div>
     <div class="live-status" id="mmStatus"></div>
-    <div id="mmResults"></div>
   </div>
-</section>
+</template>
 
-<!-- TOOL: FP&A ANALYSIS -->
-<section class="tool" id="tool-fpa">
+<template id="tpl-fpa">
   <div class="tool-head">
     <span class="code">FPA.EXE — LIVE</span>
     <h2>FP&amp;A Variance &amp; Forecast Analysis</h2>
@@ -318,12 +339,10 @@
       <button id="fpaRunBtn" onclick="runFPA()">ANALYZE</button>
     </div>
     <div class="live-status" id="fpaStatus">No file selected — <a href="sample-pnl.xlsx" download style="color:#8a6d1a;">download a sample monthly P&amp;L</a> to try this tool.</div>
-    <div id="fpaResults"></div>
   </div>
-</section>
+</template>
 
-<!-- TOOL: M&A MONITOR -->
-<section class="tool" id="tool-mam">
+<template id="tpl-mam">
   <div class="tool-head">
     <span class="code">MAMONITOR.EXE — LIVE</span>
     <h2>M&amp;A Monitor</h2>
@@ -350,12 +369,10 @@
       <button id="mamRunBtn" onclick="runMAMonitor()">FIND DEALS</button>
     </div>
     <div class="live-status" id="mamStatus"></div>
-    <div id="mamResults"></div>
   </div>
-</section>
+</template>
 
-<!-- TOOL: QUALITY OF EARNINGS -->
-<section class="tool" id="tool-qoe">
+<template id="tpl-qoe">
   <div class="tool-head">
     <span class="code">QOE.EXE — LIVE</span>
     <h2>Quality of Earnings</h2>
@@ -368,12 +385,10 @@
       <button id="qoeRunBtn" onclick="runQoE()">RUN QOE REVIEW</button>
     </div>
     <div class="live-status" id="qoeStatus"></div>
-    <div id="qoeResults"></div>
   </div>
-</section>
+</template>
 
-<!-- TOOL: BUSINESS CASE BUILDER -->
-<section class="tool" id="tool-bcb">
+<template id="tpl-bcb">
   <div class="tool-head">
     <span class="code">BUSINESSCASE.EXE — LIVE</span>
     <h2>Business Case Builder</h2>
@@ -386,12 +401,10 @@
       <button id="bcbRunBtn" onclick="runBusinessCase()">BUILD BUSINESS CASE</button>
     </div>
     <div class="live-status" id="bcbStatus"></div>
-    <div id="bcbResults"></div>
   </div>
-</section>
+</template>
 
-<!-- TOOL: STAKEHOLDER & RELATIONSHIP MAPPER -->
-<section class="tool" id="tool-stk">
+<template id="tpl-stk">
   <div class="tool-head">
     <span class="code">STAKEHOLDER.EXE — LIVE</span>
     <h2>Stakeholder &amp; Relationship Mapper</h2>
@@ -404,9 +417,8 @@
       <button id="stkRunBtn" onclick="runStakeholderMap()">BUILD STAKEHOLDER MAP</button>
     </div>
     <div class="live-status" id="stkStatus"></div>
-    <div id="stkResults"></div>
   </div>
-</section>
+</template>
 
 <div class="disclaimer-bar">
   <p>Outputs on this page are generated by AI using live web research and may contain errors or omissions. Figures should be independently verified before use in any decision-making context.</p>
@@ -424,23 +436,38 @@
 // ============================================================================
 const API_BASE = "https://deal-terminal-backend.abhi-srcc.workers.dev";
 
-// ---------- Nav ----------
+// ---------- Nav: injects the selected tool's controls into the top-right panel,
+// and shows only that tool's results block further down the page ----------
+function activateTool(toolKey){
+  const tpl = document.getElementById('tpl-' + toolKey);
+  const panel = document.getElementById('activeToolPanel');
+  if (tpl && panel) {
+    panel.innerHTML = '';
+    panel.appendChild(tpl.content.cloneNode(true));
+  }
+  document.querySelectorAll('.tool-result-block').forEach(b=>b.classList.remove('active'));
+  const block = document.getElementById('resblock-' + toolKey);
+  if (block) block.classList.add('active');
+  updateSetupNotices();
+}
+
 document.getElementById('navEl').addEventListener('click', (e)=>{
   const btn = e.target.closest('button');
   if(!btn) return;
   document.querySelectorAll('nav.fkeys button').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  document.querySelectorAll('section.tool').forEach(s=>s.classList.remove('active'));
-  document.getElementById('tool-'+btn.dataset.tool).classList.add('active');
+  activateTool(btn.dataset.tool);
 });
 
-// ---------- Setup notices: check ONCE on page load, not just after a click ----------
+// ---------- Setup notices: check on every tool activation, not just once ----------
 function updateSetupNotices(){
   document.querySelectorAll('.setup-notice').forEach(el=>{
     el.style.display = API_BASE ? 'none' : 'block';
   });
 }
-updateSetupNotices();
+
+// Load the default tool's controls into the top panel on page load
+activateTool('orig');
 
 // ---------- Ticker: live market indices ----------
 async function loadTicker(){
@@ -496,7 +523,7 @@ async function runOrigination(){
   const btn = document.getElementById('origRunBtn');
   const data = await callBackend('origination', {region, industry}, 'origStatus', btn);
   if(!data) return;
-  renderOriginationResults(data);
+  safeRender(renderOriginationResults, "origResults", data);
 }
 
 function renderOriginationResults(data){
@@ -561,7 +588,7 @@ async function runCompanyProfile(){
   const btn = document.getElementById('profileRunBtn');
   const data = await callBackend('company-profile', {company}, 'profileStatus', btn);
   if(!data) return;
-  renderProfileResults(data);
+  safeRender(renderProfileResults, "profileResults", data);
 }
 
 function renderProfileResults(d){
@@ -605,7 +632,7 @@ async function runComps(){
   const btn = document.getElementById('compsRunBtn');
   const data = await callBackend('comps', {company}, 'compsStatus', btn);
   if(!data) return;
-  renderCompsResults(data);
+  safeRender(renderCompsResults, "compsResults", data);
 }
 
 function renderCompsResults(d){
@@ -638,7 +665,7 @@ async function runMarketMap(){
   const btn = document.getElementById('mmRunBtn');
   const data = await callBackend('market-map', {sector}, 'mmStatus', btn);
   if(!data) return;
-  renderMarketMapResults(data);
+  safeRender(renderMarketMapResults, "mmResults", data);
 }
 
 function renderMarketMapResults(d){
@@ -653,12 +680,16 @@ function renderMarketMapResults(d){
 }
 
 // ---------- Tool: FP&A Analysis ----------
-document.getElementById('fpaFile').addEventListener('change', (e)=>{
-  const f = e.target.files[0];
-  const statusEl = document.getElementById('fpaStatus');
-  if(f){
-    statusEl.innerHTML = `Selected: <b>${f.name}</b> — click Analyze.`;
-    statusEl.className = 'live-status';
+// Using event delegation since #fpaFile only exists in the DOM after its
+// template is cloned into the active tool panel (not present at page load).
+document.getElementById('activeToolPanel').addEventListener('change', (e)=>{
+  if (e.target && e.target.id === 'fpaFile') {
+    const f = e.target.files[0];
+    const statusEl = document.getElementById('fpaStatus');
+    if (f && statusEl) {
+      statusEl.innerHTML = `Selected: <b>${f.name}</b> — click Analyze.`;
+      statusEl.className = 'live-status';
+    }
   }
 });
 
@@ -703,7 +734,7 @@ async function runFPA(){
   }
   const data = await callBackend('fpa-variance', {csvText}, 'fpaStatus', btn);
   if(!data) return;
-  renderFPAResults(data);
+  safeRender(renderFPAResults, "fpaResults", data);
 }
 
 function renderFPAResults(d){
@@ -727,7 +758,7 @@ async function runMAMonitor(){
   const btn = document.getElementById('mamRunBtn');
   const data = await callBackend('ma-monitor', {region, industry}, 'mamStatus', btn);
   if(!data) return;
-  renderMAMonitorResults(data);
+  safeRender(renderMAMonitorResults, "mamResults", data);
 }
 
 function renderMAMonitorResults(d){
@@ -756,6 +787,23 @@ function renderMAMonitorResults(d){
 // ============================================================================
 function escapeHtml(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Wraps every render*Results call: if the backend returned data successfully
+// but the rendering itself throws (an unexpected data shape, a null array
+// item, anything), this shows a diagnosable message in the results area
+// instead of silently doing nothing — which is what "Done." with no visible
+// output actually means: a render-time error was thrown and swallowed.
+function safeRender(renderFn, containerId, data){
+  try {
+    renderFn(data);
+  } catch(e) {
+    console.error('Render error in ' + containerId + ':', e);
+    const el = document.getElementById(containerId);
+    if (el) {
+      el.innerHTML = `<div style="background:#fff0ee;border:1px solid #e0a89e;padding:16px 18px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#8a3a2e;line-height:1.6;">⚠ The result came back from the backend successfully, but something went wrong displaying it (${escapeHtml(e.message)}). This is a display bug, not a data failure — try running it again, or switch tabs and back.</div>`;
+    }
+  }
 }
 function sanitizeFilename(s){
   return (s || 'export').replace(/[^a-z0-9]+/gi,'_').replace(/^_+|_+$/g,'').slice(0,60) || 'export';
@@ -1051,7 +1099,7 @@ async function runQoE(){
   const btn = document.getElementById('qoeRunBtn');
   const data = await callBackend('qoe', {company}, 'qoeStatus', btn);
   if (!data) return;
-  renderQoEResults(data);
+  safeRender(renderQoEResults, "qoeResults", data);
 }
 function renderQoEResults(d){
   const adjRows = (d.adjustments||[]).map(a=>`<tr><td>${escapeHtml(a.item||'')}</td><td>${escapeHtml(a.amount||'')}</td><td>${escapeHtml(a.rationale||'')}</td></tr>`).join('');
@@ -1086,7 +1134,7 @@ async function runBusinessCase(){
   const btn = document.getElementById('bcbRunBtn');
   const data = await callBackend('business-case', {company}, 'bcbStatus', btn);
   if (!data) return;
-  renderBusinessCaseResults(data);
+  safeRender(renderBusinessCaseResults, "bcbResults", data);
 }
 function renderBusinessCaseResults(d){
   const swot = d.swot || {};
@@ -1126,10 +1174,10 @@ async function runStakeholderMap(){
   const btn = document.getElementById('stkRunBtn');
   const data = await callBackend('stakeholder-map', {company}, 'stkStatus', btn);
   if (!data) return;
-  renderStakeholderMapResults(data);
+  safeRender(renderStakeholderMapResults, "stkResults", data);
 }
 function renderStakeholderMapResults(d){
-  const cards = (d.stakeholders||[]).map(s=>`
+  const cards = (d.stakeholders||[]).filter(s => s && typeof s === 'object').map(s=>`
     <div class="profile-card">
       <h5>${escapeHtml(s.title||'')}</h5>
       <div style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;margin-bottom:4px;">${escapeHtml(s.name||'')}</div>
