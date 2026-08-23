@@ -227,15 +227,7 @@
   <div class="hero-right" id="activeToolPanel"></div>
 </section>
 
-<section class="pulse-section">
-  <div class="pulse-head">
-    <span class="pulse-title">GLOBAL CORPORATE PULSE</span>
-    <span class="pulse-sub" id="pulseStatus">Loading live developments…</span>
-  </div>
-  <div id="pulseResults" class="pulse-grid"></div>
-</section>
-
-<!-- TOOL: ORIGINATION -->
+<!-- TOOL RESULTS: rendered directly below the hero+tool section, before Pulse -->
 <div class="tool-results-area">
   <div class="tool-result-block active" id="resblock-orig"><div class="panel result-panel"><div id="origResults"></div></div></div>
   <div class="tool-result-block" id="resblock-profile"><div class="panel result-panel"><div id="profileResults"></div></div></div>
@@ -247,6 +239,14 @@
   <div class="tool-result-block" id="resblock-bcb"><div class="panel result-panel"><div id="bcbResults"></div></div></div>
   <div class="tool-result-block" id="resblock-stk"><div class="panel result-panel"><div id="stkResults"></div></div></div>
 </div>
+
+<section class="pulse-section">
+  <div class="pulse-head">
+    <span class="pulse-title">GLOBAL CORPORATE PULSE</span>
+    <span class="pulse-sub" id="pulseStatus">Loading live developments…</span>
+  </div>
+  <div id="pulseResults" class="pulse-grid"></div>
+</section>
 
 <template id="tpl-orig">
   <div class="tool-head">
@@ -527,7 +527,7 @@ async function runOrigination(){
 }
 
 function renderOriginationResults(data){
-  const opps = data.opportunities || [];
+  const opps = safeArray(data.opportunities);
   const typeCounts = {};
   const horizonCounts = {};
   opps.forEach(o=>{
@@ -592,8 +592,8 @@ async function runCompanyProfile(){
 }
 
 function renderProfileResults(d){
-  const mgmt = (d.key_management||[]).map(m=>`<div class="row"><span>${m.title}</span><span>${m.name}</span></div>`).join('');
-  const news = (d.recent_news||[]).map(n=>`<div class="news-item"><span class="d">${n.date}</span><br>${n.headline}</div>`).join('');
+  const mgmt = safeArray(d.key_management).map(m=>`<div class="row"><span>${m.title}</span><span>${m.name}</span></div>`).join('');
+  const news = safeArray(d.recent_news).map(n=>`<div class="news-item"><span class="d">${n.date}</span><br>${n.headline}</div>`).join('');
   const inc = d.income_statement_highlights || {};
   const bs = d.balance_sheet_highlights || {};
 
@@ -636,7 +636,7 @@ async function runComps(){
 }
 
 function renderCompsResults(d){
-  const peers = d.peers || [];
+  const peers = safeArray(d.peers);
   const rows = peers.map(p=>`
     <tr>
       <td><b>${p.company}</b></td>
@@ -669,9 +669,9 @@ async function runMarketMap(){
 }
 
 function renderMarketMapResults(d){
-  const segments = d.sub_segments || [];
+  const segments = safeArray(d.sub_segments);
   const html = segments.map(seg=>{
-    const players = (seg.players||[]).map(p=>`<span class="mm-player ${(p.position||'').toLowerCase()}">${p.name}</span>`).join('');
+    const players = safeArray(seg.players).map(p=>`<span class="mm-player ${(p.position||'').toLowerCase()}">${p.name}</span>`).join('');
     return `<div class="mm-segment"><h5>${seg.name}</h5><p>${seg.description||''}</p><div class="mm-players">${players}</div></div>`;
   }).join('');
   document.getElementById('mmResults').innerHTML = `<div style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#8a8672;margin-bottom:4px;">${d.sector}</div>` + (html || '<p>No market map returned — try again.</p>');
@@ -738,9 +738,9 @@ async function runFPA(){
 }
 
 function renderFPAResults(d){
-  const commentary = (d.variance_commentary||[]).map(c=>`<div class="fpa-month"><div class="m">${c.month}</div>${c.commentary}</div>`).join('');
-  const forecastRows = (d.forecast_next_3_months||[]).map(f=>`<tr><td>${f.month}</td><td>${f.revenue}</td><td>${f.ebitda}</td></tr>`).join('');
-  const risks = (d.key_risks||[]).map(r=>`<li>${r}</li>`).join('');
+  const commentary = safeArray(d.variance_commentary).map(c=>`<div class="fpa-month"><div class="m">${c.month}</div>${c.commentary}</div>`).join('');
+  const forecastRows = safeArray(d.forecast_next_3_months).map(f=>`<tr><td>${f.month}</td><td>${f.revenue}</td><td>${f.ebitda}</td></tr>`).join('');
+  const risks = safeArray(d.key_risks).map(r=>`<li>${r}</li>`).join('');
   document.getElementById('fpaResults').innerHTML = `
     <h5 style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-transform:uppercase;color:#6b6852;margin:22px 0 6px;">Variance commentary</h5>
     ${commentary || '<p>No commentary returned.</p>'}
@@ -762,7 +762,7 @@ async function runMAMonitor(){
 }
 
 function renderMAMonitorResults(d){
-  const deals = d.deals || [];
+  const deals = safeArray(d.deals);
   const rows = deals.map(x=>`
     <tr>
       <td><b>${x.acquirer}</b></td>
@@ -787,6 +787,13 @@ function renderMAMonitorResults(d){
 // ============================================================================
 function escapeHtml(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+// Guards against a non-array value showing up where an array is expected —
+// e.g. .forEach/.map failing because the model returned an object or string
+// for a field the schema declares as an array. Falls back to [] instead of
+// letting a single malformed field crash the whole render.
+function safeArray(x){
+  return Array.isArray(x) ? x : [];
 }
 
 // Wraps every render*Results call: if the backend returned data successfully
@@ -1081,9 +1088,9 @@ async function loadGlobalPulse(){
   }
 }
 function renderGlobalPulse(data){
-  const regions = data.regions || [];
+  const regions = safeArray(data.regions);
   const html = regions.map(r=>{
-    const items = (r.developments || []).map(d=>`
+    const items = safeArray(r.developments).map(d=>`
       <div class="pulse-item"><span class="co">${escapeHtml(d.company||'')}</span> — ${escapeHtml(d.headline||'')}<br><span class="meta">${escapeHtml(d.date||'')} · ${escapeHtml(d.category||'')}</span></div>`).join('');
     return `<div class="pulse-region"><h6>${escapeHtml(r.region||'')}</h6>${items || '<div class="pulse-item">No items.</div>'}</div>`;
   }).join('');
@@ -1102,8 +1109,8 @@ async function runQoE(){
   safeRender(renderQoEResults, "qoeResults", data);
 }
 function renderQoEResults(d){
-  const adjRows = (d.adjustments||[]).map(a=>`<tr><td>${escapeHtml(a.item||'')}</td><td>${escapeHtml(a.amount||'')}</td><td>${escapeHtml(a.rationale||'')}</td></tr>`).join('');
-  const flags = (d.quality_flags||[]).map(f=>`<li><span class="pill ${(f.severity||'').toLowerCase()}">${escapeHtml(f.severity||'')}</span> ${escapeHtml(f.finding||'')}</li>`).join('');
+  const adjRows = safeArray(d.adjustments).map(a=>`<tr><td>${escapeHtml(a.item||'')}</td><td>${escapeHtml(a.amount||'')}</td><td>${escapeHtml(a.rationale||'')}</td></tr>`).join('');
+  const flags = safeArray(d.quality_flags).map(f=>`<li><span class="pill ${(f.severity||'').toLowerCase()}">${escapeHtml(f.severity||'')}</span> ${escapeHtml(f.finding||'')}</li>`).join('');
   document.getElementById('qoeResults').innerHTML = `
     <div style="background:var(--white);border:1px solid #ddd9c5;padding:20px;">
       <h4 style="margin:0 0 4px;font-family:'Space Grotesk',sans-serif;">${escapeHtml(d.company)}</h4>
@@ -1138,9 +1145,9 @@ async function runBusinessCase(){
 }
 function renderBusinessCaseResults(d){
   const swot = d.swot || {};
-  const swotBlock = (label, items) => `<div class="profile-card"><h5>${label}</h5><ul class="fpa-risks">${(items||[]).map(i=>`<li>${escapeHtml(i)}</li>`).join('') || '<li>None identified.</li>'}</ul></div>`;
-  const options = (d.strategic_options||[]).map(o=>`<div class="fpa-month"><div class="m">${escapeHtml(o.option||'')}</div>${escapeHtml(o.description||'')}</div>`).join('');
-  const risks = (d.key_risks||[]).map(r=>`<li>${escapeHtml(r)}</li>`).join('');
+  const swotBlock = (label, items) => `<div class="profile-card"><h5>${label}</h5><ul class="fpa-risks">${safeArray(items).map(i=>`<li>${escapeHtml(i)}</li>`).join('') || '<li>None identified.</li>'}</ul></div>`;
+  const options = safeArray(d.strategic_options).map(o=>`<div class="fpa-month"><div class="m">${escapeHtml(o.option||'')}</div>${escapeHtml(o.description||'')}</div>`).join('');
+  const risks = safeArray(d.key_risks).map(r=>`<li>${escapeHtml(r)}</li>`).join('');
   document.getElementById('bcbResults').innerHTML = `
     <div style="background:var(--white);border:1px solid #ddd9c5;padding:20px;">
       <h4 style="margin:0 0 6px;font-family:'Space Grotesk',sans-serif;">${escapeHtml(d.company)}</h4>
@@ -1177,7 +1184,7 @@ async function runStakeholderMap(){
   safeRender(renderStakeholderMapResults, "stkResults", data);
 }
 function renderStakeholderMapResults(d){
-  const cards = (d.stakeholders||[]).filter(s => s && typeof s === 'object').map(s=>`
+  const cards = safeArray(d.stakeholders).filter(s => s && typeof s === 'object').map(s=>`
     <div class="profile-card">
       <h5>${escapeHtml(s.title||'')}</h5>
       <div style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;margin-bottom:4px;">${escapeHtml(s.name||'')}</div>
