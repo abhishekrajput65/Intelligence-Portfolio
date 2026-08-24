@@ -111,7 +111,15 @@
   .live-controls button:disabled{ background:#9a9686; cursor:wait; }
   .live-status{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:#8a8672; margin-bottom:18px; min-height:16px;}
   .live-status.err{ color:var(--red); }
+  .live-status.limit{ color:#8a6d1a; }
   .setup-notice{ display:none; background:#fff8e6; border:1px solid var(--gold); color:#4a3c0a; padding:14px 18px; font-family:'IBM Plex Mono',monospace; font-size:12px; margin-bottom:22px; line-height:1.6; }
+
+  /* Recent runs */
+  .recent-runs{ margin-top:2px; margin-bottom:10px; }
+  .recent-runs-label{ font-family:'IBM Plex Mono',monospace; font-size:10px; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-muted); margin-bottom:6px; }
+  .recent-runs-pills{ display:flex; flex-wrap:wrap; gap:6px; }
+  .recent-pill{ font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--ink-panel); color:var(--gold-bright); border:1px solid var(--ink-line); padding:5px 11px; border-radius:14px; cursor:pointer; transition:all .15s ease; }
+  .recent-pill:hover{ border-color:var(--gold); background:#1a2236; }
 
   .opp-table{ width:100%; border-collapse:collapse; font-size:13px; background:var(--white); }
   .opp-table th{ text-align:left; font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.03em; color:#6b6852; padding:10px 12px; border-bottom:2px solid #ddd9c5;}
@@ -186,6 +194,14 @@
   .export-btn{ display:inline-flex; align-items:center; gap:5px; font-family:'IBM Plex Mono',monospace; font-size:11px; background:var(--white); border:1px solid #cfccb9; color:#3a3a30; padding:6px 12px; border-radius:3px; cursor:pointer; transition:all .15s ease; }
   .export-btn:hover{ border-color:var(--gold); background:#fff8e6; }
   .export-btn svg{ width:13px; height:13px; }
+
+  /* Stats admin overlay */
+  .stats-overlay{ position:fixed; top:16px; right:16px; z-index:999; background:var(--ink-panel); border:1px solid var(--gold); padding:16px 18px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; width:290px; box-shadow:0 10px 30px rgba(0,0,0,.5); }
+  .stats-overlay h4{ margin:0 0 10px; font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--gold); }
+  .stats-overlay .row{ display:flex; justify-content:space-between; gap:10px; padding:3px 0; }
+  .stats-overlay .row span:first-child{ flex-shrink:1; }
+  .stats-overlay .row span:last-child{ flex-shrink:0; font-weight:600; }
+  .stats-overlay .close{ position:absolute; top:8px; right:10px; cursor:pointer; color:var(--ink-muted); }
 
   @media (max-width:860px){
     .hero-integrated{ grid-template-columns:1fr; }
@@ -272,6 +288,7 @@
       </select>
       <button id="origRunBtn" onclick="runOrigination()">RUN SCAN</button>
     </div>
+    <div class="recent-runs" id="origRecent"></div>
     <div class="live-status" id="origStatus"></div>
   </div>
 </template>
@@ -288,6 +305,7 @@
       <input type="text" id="profileCompany" placeholder="Type a real company name, e.g. 'Apple'" value="Apple">
       <button id="profileRunBtn" onclick="runCompanyProfile()">BUILD PROFILE</button>
     </div>
+    <div class="recent-runs" id="profileRecent"></div>
     <div class="live-status" id="profileStatus"></div>
   </div>
 </template>
@@ -304,6 +322,7 @@
       <input type="text" id="compsCompany" placeholder="Type a public company name, e.g. 'ServiceNow'" value="ServiceNow">
       <button id="compsRunBtn" onclick="runComps()">BUILD COMPS TABLE</button>
     </div>
+    <div class="recent-runs" id="compsRecent"></div>
     <div class="live-status" id="compsStatus"></div>
   </div>
 </template>
@@ -320,6 +339,7 @@
       <input type="text" id="mmSector" placeholder="Type a sector, e.g. 'Cloud Observability Software'" value="Cloud Observability Software">
       <button id="mmRunBtn" onclick="runMarketMap()">BUILD MARKET MAP</button>
     </div>
+    <div class="recent-runs" id="mmRecent"></div>
     <div class="live-status" id="mmStatus"></div>
   </div>
 </template>
@@ -366,6 +386,7 @@
       </select>
       <button id="mamRunBtn" onclick="runMAMonitor()">FIND DEALS</button>
     </div>
+    <div class="recent-runs" id="mamRecent"></div>
     <div class="live-status" id="mamStatus"></div>
   </div>
 </template>
@@ -382,6 +403,7 @@
       <input type="text" id="qoeCompany" placeholder="Type a real company name, e.g. 'Salesforce'" value="Salesforce">
       <button id="qoeRunBtn" onclick="runQoE()">RUN QOE REVIEW</button>
     </div>
+    <div class="recent-runs" id="qoeRecent"></div>
     <div class="live-status" id="qoeStatus"></div>
   </div>
 </template>
@@ -398,6 +420,7 @@
       <input type="text" id="bcbCompany" placeholder="Type a real company name, e.g. 'Nike'" value="Nike">
       <button id="bcbRunBtn" onclick="runBusinessCase()">BUILD BUSINESS CASE</button>
     </div>
+    <div class="recent-runs" id="bcbRecent"></div>
     <div class="live-status" id="bcbStatus"></div>
   </div>
 </template>
@@ -417,6 +440,17 @@
 // ============================================================================
 const API_BASE = "https://deal-terminal-backend.abhi-srcc.workers.dev";
 
+// Map from short tool key (used in nav/templates) to the backend action name
+const TOOL_ACTION_MAP = {
+  orig: "origination",
+  profile: "company-profile",
+  comps: "comps",
+  mm: "market-map",
+  mam: "ma-monitor",
+  qoe: "qoe",
+  bcb: "business-case",
+};
+
 function activateTool(toolKey){
   const tpl = document.getElementById('tpl-' + toolKey);
   const panel = document.getElementById('activeToolPanel');
@@ -428,6 +462,7 @@ function activateTool(toolKey){
   const block = document.getElementById('resblock-' + toolKey);
   if (block) block.classList.add('active');
   updateSetupNotices();
+  if (TOOL_ACTION_MAP[toolKey]) loadRecentRuns(toolKey);
 }
 
 document.getElementById('navEl').addEventListener('click', (e)=>{
@@ -479,6 +514,11 @@ async function callBackend(action, payload, statusElId, btnEl){
   try{
     const res = await fetch(API_BASE, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action, payload}) });
     const data = await res.json();
+    if(data.error === 'RATE_LIMIT'){
+      statusEl.textContent = data.message || 'Daily limit reached — try again tomorrow, or check Recent runs above.';
+      statusEl.className = 'live-status limit';
+      return null;
+    }
     if(data.error){ throw new Error(data.error); }
     statusEl.textContent = 'Done.';
     return data;
@@ -491,6 +531,38 @@ async function callBackend(action, payload, statusElId, btnEl){
   }
 }
 
+// ---------- Recent runs: clickable cached results, shown per tool ----------
+async function loadRecentRuns(toolKey){
+  const action = TOOL_ACTION_MAP[toolKey];
+  const container = document.getElementById(toolKey + 'Recent');
+  if (!action || !container || !API_BASE) return;
+  container.innerHTML = '';
+  try{
+    const res = await fetch(API_BASE, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'recent-runs', payload:{ tool: action } }) });
+    const data = await res.json();
+    const runs = (data && data.runs) || [];
+    if (!runs.length) return;
+    const pills = runs.map(r => `<button type="button" class="recent-pill" data-label="${escapeHtml(r.label)}">${escapeHtml(r.label)}</button>`).join('');
+    container.innerHTML = `<div class="recent-runs-label">Recent runs — click to view instantly, no wait:</div><div class="recent-runs-pills">${pills}</div>`;
+    container.querySelectorAll('.recent-pill').forEach((btn, i) => {
+      btn.addEventListener('click', () => runFromRecent(toolKey, runs[i]));
+    });
+  }catch(e){ /* silently skip if unavailable */ }
+}
+
+function runFromRecent(toolKey, run){
+  const payload = run.payload || {};
+  // Reflect the recent run's values back into the visible inputs, then execute —
+  // this will be a cache hit (free, instant) since it's an identical payload.
+  if (toolKey === 'orig') { document.getElementById('origRegion').value = payload.region; document.getElementById('origIndustry').value = payload.industry; runOrigination(); }
+  else if (toolKey === 'profile') { document.getElementById('profileCompany').value = payload.company; runCompanyProfile(); }
+  else if (toolKey === 'comps') { document.getElementById('compsCompany').value = payload.company; runComps(); }
+  else if (toolKey === 'mm') { document.getElementById('mmSector').value = payload.sector; runMarketMap(); }
+  else if (toolKey === 'mam') { document.getElementById('mamRegion').value = payload.region; document.getElementById('mamIndustry').value = payload.industry; runMAMonitor(); }
+  else if (toolKey === 'qoe') { document.getElementById('qoeCompany').value = payload.company; runQoE(); }
+  else if (toolKey === 'bcb') { document.getElementById('bcbCompany').value = payload.company; runBusinessCase(); }
+}
+
 // Tool: Origination
 async function runOrigination(){
   const region = document.getElementById('origRegion').value;
@@ -499,6 +571,7 @@ async function runOrigination(){
   const data = await callBackend('origination', {region, industry}, 'origStatus', btn);
   if(!data) return;
   safeRender(renderOriginationResults, "origResults", data);
+  loadRecentRuns('orig');
 }
 
 function renderOriginationResults(data){
@@ -564,6 +637,7 @@ async function runCompanyProfile(){
   const data = await callBackend('company-profile', {company}, 'profileStatus', btn);
   if(!data) return;
   safeRender(renderProfileResults, "profileResults", data);
+  loadRecentRuns('profile');
 }
 
 function renderProfileResults(d){
@@ -608,6 +682,7 @@ async function runComps(){
   const data = await callBackend('comps', {company}, 'compsStatus', btn);
   if(!data) return;
   safeRender(renderCompsResults, "compsResults", data);
+  loadRecentRuns('comps');
 }
 
 function renderCompsResults(d){
@@ -641,6 +716,7 @@ async function runMarketMap(){
   const data = await callBackend('market-map', {sector}, 'mmStatus', btn);
   if(!data) return;
   safeRender(renderMarketMapResults, "mmResults", data);
+  loadRecentRuns('mm');
 }
 
 function renderMarketMapResults(d){
@@ -732,6 +808,7 @@ async function runMAMonitor(){
   const data = await callBackend('ma-monitor', {region, industry}, 'mamStatus', btn);
   if(!data) return;
   safeRender(renderMAMonitorResults, "mamResults", data);
+  loadRecentRuns('mam');
 }
 
 function renderMAMonitorResults(d){
@@ -1064,6 +1141,7 @@ async function runQoE(){
   const data = await callBackend('qoe', {company}, 'qoeStatus', btn);
   if (!data) return;
   safeRender(renderQoEResults, "qoeResults", data);
+  loadRecentRuns('qoe');
 }
 function renderQoEResults(d){
   const adjRows = safeArray(d.adjustments).map(a=>`<tr><td>${escapeHtml(a.item||'')}</td><td>${escapeHtml(a.amount||'')}</td><td>${escapeHtml(a.rationale||'')}</td></tr>`).join('');
@@ -1097,6 +1175,7 @@ async function runBusinessCase(){
   const data = await callBackend('business-case', {company}, 'bcbStatus', btn);
   if (!data) return;
   safeRender(renderBusinessCaseResults, "bcbResults", data);
+  loadRecentRuns('bcb');
 }
 function renderBusinessCaseResults(d){
   const swot = d.swot || {};
@@ -1128,6 +1207,26 @@ function renderBusinessCaseResults(d){
   renderExportBar('bcbResults', 'Business Case - ' + (d.company||''), d);
 }
 
+// ---------- Hidden stats view: visit yoursite/?stats=1 to see it ----------
+async function maybeShowStats(){
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('stats') !== '1' || !API_BASE) return;
+  try{
+    const res = await fetch(API_BASE, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'stats', payload:{} }) });
+    const data = await res.json();
+    const rows = Object.entries(data.fresh_executions_today || {}).map(([k,v]) => `<div class="row"><span>${escapeHtml(k)}</span><span>${v}</span></div>`).join('');
+    const overlay = document.createElement('div');
+    overlay.className = 'stats-overlay';
+    overlay.innerHTML = `<span class="close" id="statsClose">✕</span>
+      <h4>USAGE — ${escapeHtml(data.date || '')}</h4>
+      <div class="row"><span>Unique visitors today</span><span>${data.unique_visitors_today ?? '—'}</span></div>
+      <div style="margin:8px 0 4px;opacity:.6;">Fresh executions:</div>
+      ${rows || '<div class="row"><span>None yet</span></div>'}`;
+    document.body.appendChild(overlay);
+    document.getElementById('statsClose').addEventListener('click', ()=>overlay.remove());
+  }catch(e){ /* silent */ }
+}
+maybeShowStats();
 </script>
 </body>
 </html>
