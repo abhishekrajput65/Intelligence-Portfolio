@@ -85,8 +85,10 @@
   .pulse-region h6{ margin:0 0 8px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--gold); }
   .pulse-item{ font-size:12.5px; line-height:1.5; padding:8px 0; border-bottom:1px solid var(--ink-line); }
   .pulse-item:last-child{ border-bottom:none; }
+  .pulse-link{ color:var(--white); text-decoration:none; border-bottom:1px solid rgba(201,162,39,0.35); transition:border-color .15s ease, color .15s ease; }
+  .pulse-link:hover{ color:var(--gold-bright); border-color:var(--gold); }
   .pulse-item .co{ font-weight:600; color:var(--white); }
-  .pulse-item .meta{ font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--ink-muted); }
+  .pulse-item .meta{ font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--ink-muted); margin-top:3px; display:inline-block; }
 
   .tool-results-area{ }
   .tool-result-block{ display:none; padding:32px 5vw 56px; border-bottom:1px solid var(--ink-line); }
@@ -536,7 +538,7 @@ async function callBackend(action, payload, statusElId, btnEl){
 async function loadRecentRuns(toolKey){
   const action = TOOL_ACTION_MAP[toolKey];
   const container = document.getElementById(toolKey + 'Recent');
-  if (!action || !container) return; // Removed strict dependency on API_BASE so fallback always fires
+  if (!action || !container) return;
   container.innerHTML = '';
   let runs = [];
   
@@ -545,11 +547,10 @@ async function loadRecentRuns(toolKey){
       const res = await fetch(API_BASE, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'recent-runs', payload:{ tool: action } }) });
       const data = await res.json();
       runs = (data && data.runs) || [];
-    }catch(e){ /* silently skip and rely on hardcoded fallback below */ }
+    }catch(e){ /* silently rely on hardcoded fallback */ }
   }
   
-  // Fallback to default recent runs if the database returns an empty list or network fails.
-  // Ensures new visitors always have a $0-cost clickable option instantly.
+  // Fallback defaults guaranteeing instant $0-cost runs for visitors
   if (!runs.length) {
     if (toolKey === 'orig') runs = [{ label: 'Technology · United States', payload: { region: 'United States', industry: 'Technology' } }];
     else if (toolKey === 'profile') runs = [{ label: 'Apple', payload: { company: 'Apple' } }];
@@ -560,7 +561,7 @@ async function loadRecentRuns(toolKey){
     else if (toolKey === 'bcb') runs = [{ label: 'Nike', payload: { company: 'Nike' } }];
   }
 
-  if (!runs.length) return; // Only true for FPA Analysis which shouldn't have pills
+  if (!runs.length) return;
 
   const pills = runs.map(r => `<button type="button" class="recent-pill" data-label="${escapeHtml(r.label)}">${escapeHtml(r.label)}</button>`).join('');
   container.innerHTML = `<div class="recent-runs-label">Recent runs — click to view instantly, no wait:</div><div class="recent-runs-pills">${pills}</div>`;
@@ -1143,8 +1144,17 @@ async function loadGlobalPulse(){
 function renderGlobalPulse(data){
   const regions = safeArray(data.regions);
   const html = regions.map(r=>{
-    const items = safeArray(r.developments).map(d=>`
-      <div class="pulse-item"><span class="co">${escapeHtml(d.company||'')}</span> — ${escapeHtml(d.headline||'')}<br><span class="meta">${escapeHtml(d.date||'')} · ${escapeHtml(d.category||'')}</span></div>`).join('');
+    const items = safeArray(r.developments).map(d=>{
+      const titleText = `${escapeHtml(d.company||'')} — ${escapeHtml(d.headline||'')}`;
+      const titleMarkup = d.source_url 
+        ? `<a href="${escapeHtml(d.source_url)}" target="_blank" rel="noopener noreferrer" class="pulse-link">${titleText}</a>`
+        : `<span class="co">${escapeHtml(d.company||'')}</span> — ${escapeHtml(d.headline||'')}`;
+      return `
+        <div class="pulse-item">
+          ${titleMarkup}<br>
+          <span class="meta">${escapeHtml(d.date||'')} · ${escapeHtml(d.category||'')}</span>
+        </div>`;
+    }).join('');
     return `<div class="pulse-region"><h6>${escapeHtml(r.region||'')}</h6>${items || '<div class="pulse-item">No items.</div>'}</div>`;
   }).join('');
   document.getElementById('pulseResults').innerHTML = html || '<div class="pulse-item">No data available.</div>';
