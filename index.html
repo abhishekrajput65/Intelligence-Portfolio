@@ -536,32 +536,37 @@ async function callBackend(action, payload, statusElId, btnEl){
 async function loadRecentRuns(toolKey){
   const action = TOOL_ACTION_MAP[toolKey];
   const container = document.getElementById(toolKey + 'Recent');
-  if (!action || !container || !API_BASE) return;
+  if (!action || !container) return; // Removed strict dependency on API_BASE so fallback always fires
   container.innerHTML = '';
-  try{
-    const res = await fetch(API_BASE, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'recent-runs', payload:{ tool: action } }) });
-    const data = await res.json();
-    let runs = (data && data.runs) || [];
-    
-    // Fallback to default recent runs if the database returns an empty list, 
-    // ensuring new visitors always have a $0-cost clickable option instantly.
-    if (!runs.length) {
-      if (toolKey === 'orig') runs = [{ label: 'Technology · United States', payload: { region: 'United States', industry: 'Technology' } }];
-      else if (toolKey === 'profile') runs = [{ label: 'Apple', payload: { company: 'Apple' } }];
-      else if (toolKey === 'comps') runs = [{ label: 'ServiceNow', payload: { company: 'ServiceNow' } }];
-      else if (toolKey === 'mm') runs = [{ label: 'Cloud Observability Software', payload: { sector: 'Cloud Observability Software' } }];
-      else if (toolKey === 'mam') runs = [{ label: 'Technology · United States', payload: { region: 'United States', industry: 'Technology' } }];
-      else if (toolKey === 'qoe') runs = [{ label: 'Salesforce', payload: { company: 'Salesforce' } }];
-      else if (toolKey === 'bcb') runs = [{ label: 'Nike', payload: { company: 'Nike' } }];
-      else return; // Tools like FPA shouldn't have clickable fallback runs.
-    }
+  let runs = [];
+  
+  if(API_BASE){
+    try{
+      const res = await fetch(API_BASE, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'recent-runs', payload:{ tool: action } }) });
+      const data = await res.json();
+      runs = (data && data.runs) || [];
+    }catch(e){ /* silently skip and rely on hardcoded fallback below */ }
+  }
+  
+  // Fallback to default recent runs if the database returns an empty list or network fails.
+  // Ensures new visitors always have a $0-cost clickable option instantly.
+  if (!runs.length) {
+    if (toolKey === 'orig') runs = [{ label: 'Technology · United States', payload: { region: 'United States', industry: 'Technology' } }];
+    else if (toolKey === 'profile') runs = [{ label: 'Apple', payload: { company: 'Apple' } }];
+    else if (toolKey === 'comps') runs = [{ label: 'ServiceNow', payload: { company: 'ServiceNow' } }];
+    else if (toolKey === 'mm') runs = [{ label: 'Cloud Observability Software', payload: { sector: 'Cloud Observability Software' } }];
+    else if (toolKey === 'mam') runs = [{ label: 'Technology · United States', payload: { region: 'United States', industry: 'Technology' } }];
+    else if (toolKey === 'qoe') runs = [{ label: 'Salesforce', payload: { company: 'Salesforce' } }];
+    else if (toolKey === 'bcb') runs = [{ label: 'Nike', payload: { company: 'Nike' } }];
+  }
 
-    const pills = runs.map(r => `<button type="button" class="recent-pill" data-label="${escapeHtml(r.label)}">${escapeHtml(r.label)}</button>`).join('');
-    container.innerHTML = `<div class="recent-runs-label">Recent runs — click to view instantly, no wait:</div><div class="recent-runs-pills">${pills}</div>`;
-    container.querySelectorAll('.recent-pill').forEach((btn, i) => {
-      btn.addEventListener('click', () => runFromRecent(toolKey, runs[i]));
-    });
-  }catch(e){ /* silently skip if unavailable */ }
+  if (!runs.length) return; // Only true for FPA Analysis which shouldn't have pills
+
+  const pills = runs.map(r => `<button type="button" class="recent-pill" data-label="${escapeHtml(r.label)}">${escapeHtml(r.label)}</button>`).join('');
+  container.innerHTML = `<div class="recent-runs-label">Recent runs — click to view instantly, no wait:</div><div class="recent-runs-pills">${pills}</div>`;
+  container.querySelectorAll('.recent-pill').forEach((btn, i) => {
+    btn.addEventListener('click', () => runFromRecent(toolKey, runs[i]));
+  });
 }
 
 function runFromRecent(toolKey, run){
