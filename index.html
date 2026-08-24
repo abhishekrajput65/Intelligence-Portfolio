@@ -446,6 +446,7 @@ const TOOL_ACTION_MAP = {
   profile: "company-profile",
   comps: "comps",
   mm: "market-map",
+  fpa: "fpa-variance",
   mam: "ma-monitor",
   qoe: "qoe",
   bcb: "business-case",
@@ -540,8 +541,21 @@ async function loadRecentRuns(toolKey){
   try{
     const res = await fetch(API_BASE, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ action:'recent-runs', payload:{ tool: action } }) });
     const data = await res.json();
-    const runs = (data && data.runs) || [];
-    if (!runs.length) return;
+    let runs = (data && data.runs) || [];
+    
+    // Fallback to default recent runs if the database returns an empty list, 
+    // ensuring new visitors always have a $0-cost clickable option instantly.
+    if (!runs.length) {
+      if (toolKey === 'orig') runs = [{ label: 'Technology · United States', payload: { region: 'United States', industry: 'Technology' } }];
+      else if (toolKey === 'profile') runs = [{ label: 'Apple', payload: { company: 'Apple' } }];
+      else if (toolKey === 'comps') runs = [{ label: 'ServiceNow', payload: { company: 'ServiceNow' } }];
+      else if (toolKey === 'mm') runs = [{ label: 'Cloud Observability Software', payload: { sector: 'Cloud Observability Software' } }];
+      else if (toolKey === 'mam') runs = [{ label: 'Technology · United States', payload: { region: 'United States', industry: 'Technology' } }];
+      else if (toolKey === 'qoe') runs = [{ label: 'Salesforce', payload: { company: 'Salesforce' } }];
+      else if (toolKey === 'bcb') runs = [{ label: 'Nike', payload: { company: 'Nike' } }];
+      else return; // Tools like FPA shouldn't have clickable fallback runs.
+    }
+
     const pills = runs.map(r => `<button type="button" class="recent-pill" data-label="${escapeHtml(r.label)}">${escapeHtml(r.label)}</button>`).join('');
     container.innerHTML = `<div class="recent-runs-label">Recent runs — click to view instantly, no wait:</div><div class="recent-runs-pills">${pills}</div>`;
     container.querySelectorAll('.recent-pill').forEach((btn, i) => {
@@ -552,8 +566,6 @@ async function loadRecentRuns(toolKey){
 
 function runFromRecent(toolKey, run){
   const payload = run.payload || {};
-  // Reflect the recent run's values back into the visible inputs, then execute —
-  // this will be a cache hit (free, instant) since it's an identical payload.
   if (toolKey === 'orig') { document.getElementById('origRegion').value = payload.region; document.getElementById('origIndustry').value = payload.industry; runOrigination(); }
   else if (toolKey === 'profile') { document.getElementById('profileCompany').value = payload.company; runCompanyProfile(); }
   else if (toolKey === 'comps') { document.getElementById('compsCompany').value = payload.company; runComps(); }
@@ -797,7 +809,7 @@ function renderFPAResults(d){
     <table class="fpa-forecast-table"><thead><tr><th>Month</th><th>Revenue</th><th>EBITDA</th></tr></thead><tbody>${forecastRows || '<tr><td colspan="3">No forecast returned.</td></tr>'}</tbody></table>
     <h5 style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;text-transform:uppercase;color:#6b6852;margin:22px 0 6px;">Key risks</h5>
     <ul class="fpa-risks">${risks || '<li>None flagged.</li>'}</ul>`;
-  renderExportBar('fpaResults', 'FPA Variance Analysis', d);
+  renderExportBar('fpaResults', 'FP&A Variance Analysis', d);
 }
 
 // Tool: M&A Monitor
